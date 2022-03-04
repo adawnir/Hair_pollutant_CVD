@@ -37,3 +37,12 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+
+# Files
+scripts/categorical/
+scripts/overlap/
+scripts/Rplots.pdf
+
+
+
