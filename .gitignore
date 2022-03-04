@@ -40,9 +40,9 @@ vignettes/*.pdf
 
 
 # Files
-scripts/categorical/
-scripts/overlap/
-scripts/Rplots.pdf
+/scripts/categorical/
+/scripts/overlap/
+/scripts/Rplots.pdf
 
 
 
