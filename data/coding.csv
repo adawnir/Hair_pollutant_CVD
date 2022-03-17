@@ -1,0 +1,31 @@
+﻿1,obesity
+2,lipid disorder
+3,hypertension
+4,diabetes
+5,metabolic symdrone
+6,obesity + lipid disorder
+7,obesity + hypertension
+8,obesity + diabetes
+9,obesity + metabolic syndrome
+10,lipid disorder + hypertension
+11,lipid disorder + diabetes
+12,lipid disorder + metabolic syndrome
+13,hypertension + diabetes
+14,hypertension + metabolic syndrome
+15,diabetes + metabolic syndrome
+16,obesity + lipid disorder + hypertension
+17,obesity + lipid disorder + diabetes
+18,obesity + lipid disorder + metabolic syndrome
+19,obesity + hypertension + diabetes 
+20,obesity + hypertension + metabolic syndrome
+21,obesity + diabetes + metabolic syndrome
+22,lipid disorder + hypertension + diabetes
+23,lipid disorder + hypertension  + metabolic syndrome
+24,lipid disorder + diabetes + metabolic syndrome
+25,hypertension + diabetes + metabolic syndrome
+26,obesity + lipid disorder + hypertension + diabetes 
+27,obesity + lipid disorder + hypertension  + metabolic syndrome
+28,obesity + hypertension + diabetes + metabolic syndrome
+29,obesity + lipid disorder  + diabetes + metabolic syndrome
+30,lipid disorder + hypertension + diabetes + metabolic syndrome
+31,obesity + lipid disorder + hypertension + diabetes + metabolic syndrome
