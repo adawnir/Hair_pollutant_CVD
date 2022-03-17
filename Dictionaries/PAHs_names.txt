@@ -1,0 +1,13 @@
+Cotinine
+Nicotine
+1-OH-Naphthalene
+2-OH-Naphthalene
+9-OH-Fluorene
+3-OH-Fluorene
+2-OH-Fluorene
+4-OH-Phenanthrene
+3-OH-Phenanthrene
+1-OH-Phenanthrene
+2-OH-Phenanthrene
+1-OH-Pyrene
+6-OH-Chrysene+11-OH-Tetraphene
