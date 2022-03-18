@@ -105,9 +105,9 @@ summary(pest_expo)
 summary(pahs_expo)
 
 saveRDS(pest_expo, "../Processed/PesticidesPCBBDEs_ndimp.rds")
-write.csv(pest_expo, paste0("../Exports/PesticidesPCBBDEs_ndimp.csv"), row.names=FALSE)
+write.csv(pest_expo, paste0("../Exports/PesticidesPCBBDEs_ndimp.csv"))
 saveRDS(pahs_expo, "../Processed/PAHs_ndimp.rds")
-write.csv(pahs_expo, paste0("../Exports/PAHs_ndimp.csv"), row.names=FALSE)
+write.csv(pahs_expo, paste0("../Exports/PAHs_ndimp.csv"))
 
 
 ##### Log10 transformation ----
@@ -132,6 +132,6 @@ colnames(pahs_expo_imp) = colnames(pahs_expo)
 summary(pahs_expo_imp)
 
 saveRDS(pest_expo_imp, "../Processed/PesticidesPCBBDEs_ndimp_naimp.rds")
-write.csv(pest_expo_imp, paste0("../Exports/PesticidesPCBBDEs_ndimp_naimp.csv"), row.names=FALSE)
+write.csv(pest_expo_imp, paste0("../Exports/PesticidesPCBBDEs_ndimp_naimp.csv"))
 saveRDS(pahs_expo_imp, "../Processed/PAHs_ndimp_naimp.rds")
-write.csv(pest_expo_imp, paste0("../Exports/PAHs_ndimp_naimp.csv"), row.names=FALSE)
+write.csv(pahs_expo_imp, paste0("../Exports/PAHs_ndimp_naimp.csv"))
