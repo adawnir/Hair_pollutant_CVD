@@ -33,9 +33,9 @@ dim(pahs)    # 670   28
 ifelse(dir.exists("../Exports/"), "", dir.create("../Exports/"))
 
 saveRDS(pest, "../Data/PesticidesPCBBDEs.rds")
-write.csv(pest, paste0("../Exports/PesticidesPCBBDEs.csv"), row.names=FALSE)
+write.csv(pest, paste0("../Exports/PesticidesPCBBDEs.csv"))
 saveRDS(pahs, "../Data/PAHs.csv")
-write.csv(pahs, paste0("../Exports/PAHs.csv"), row.names=FALSE)
+write.csv(pahs, paste0("../Exports/PAHs.csv"))
 
 
 
