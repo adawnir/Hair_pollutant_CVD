@@ -5,7 +5,8 @@ project_path=dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(project_path)
 
 source("functions.R")
-library(imputeLCMD)
+# library(imputeLCMD)
+library(missForest)
 
 ### Load data ----
 pest = readRDS("../Data/PesticidesPCBBDEs.rds")
@@ -118,18 +119,33 @@ saveRDS(pest_expo_log, "../Processed/PesticidesPCBBDEs_ndimp_log.rds")
 saveRDS(pahs_expo_log, "../Processed/PAHs_ndimp_log.rds")
 
 ##### Imputation of missing data----
-set.seed(7)
-pest_expo_imp = impute.QRILC(t(pest_expo_log))
-pest_expo_imp = data.frame(t(pest_expo_imp[[1]]))
-colnames(pest_expo_imp) = colnames(pest_expo)
-str(pest_expo_imp)
-summary(pest_expo_imp)
+# set.seed(7)
+# pest_expo_imp = impute.QRILC(t(pest_expo_log))
+# pest_expo_imp = data.frame(t(pest_expo_imp[[1]]))
+# colnames(pest_expo_imp) = colnames(pest_expo)
+# str(pest_expo_imp)
+# summary(pest_expo_imp)
+# 
+# set.seed(7)
+# pahs_expo_imp = impute.QRILC(t(pahs_expo_log))
+# pahs_expo_imp = data.frame(t(pahs_expo_imp[[1]]))
+# colnames(pahs_expo_imp) = colnames(pahs_expo)
+# summary(pahs_expo_imp)
 
-set.seed(7)
-pahs_expo_imp = impute.QRILC(t(pahs_expo_log))
-pahs_expo_imp = data.frame(t(pahs_expo_imp[[1]]))
-colnames(pahs_expo_imp) = colnames(pahs_expo)
-summary(pahs_expo_imp)
+set.seed(202204)
+imp = missForest(pest_expo_log)
+imp$OOBerror
+pest_expo_imp = imp$ximp
+colnames(pest_expo_imp) = colnames(pest_expo_log)
+rownames(pest_expo_imp) = rownames(pest_expo_log)
+
+set.seed(202204)
+imp = missForest(pahs_expo_log)
+imp$OOBerror
+pahs_expo_imp = imp$ximp
+colnames(pahs_expo_imp) = colnames(pahs_expo_log)
+rownames(pahs_expo_imp) = rownames(pahs_expo_log)
+
 
 saveRDS(pest_expo_imp, "../Processed/PesticidesPCBBDEs_ndimp_naimp.rds")
 write.csv(pest_expo_imp, paste0("../Exports/PesticidesPCBBDEs_ndimp_naimp.csv"))
