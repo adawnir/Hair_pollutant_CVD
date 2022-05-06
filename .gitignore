@@ -39,10 +39,4 @@ vignettes/*.pdf
 .Renviron
 
 
-# Files
-/scripts/categorical
-/scripts/overlap
-/scripts/Rplots.pdf
-
-
 
