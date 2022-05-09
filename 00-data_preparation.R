@@ -238,8 +238,8 @@ saveRDS(pest, "../Data/PesticidesPCBBDEs.rds")
 write.csv(pest, paste0("../Exports/PesticidesPCBBDEs.csv"))
 saveRDS(pahs, "../Data/PAHs.csv")
 write.csv(pahs, paste0("../Exports/PAHs.csv"))
-saveRDS(pahs, "../Data/Combined.rds")
-write.csv(pahs, paste0("../Exports/Combined.csv"))
+saveRDS(comb, "../Data/Combined.rds")
+write.csv(comb, paste0("../Exports/Combined.csv"))
 
 
 
