@@ -11,14 +11,14 @@ library(colorspace)
 data = read.csv("../Data/Dataset_PesticidesPCBBDEs.csv")
 str(data)
 colnames(data) = data[1,]
-colnames(data)[16:48] = readLines("Dictionaries/PesticidesPCBBDEs_names.txt")
+colnames(data)[16:48] = readLines("../Dictionaries/PesticidesPCBBDEs_names.txt")
 pest = data[-c(1:2),]
 rownames(pest) = pest$identifiant
 dim(pest)    # 1096   48
 
 data = read.csv("../Data/Dataset_PAHs.csv")
 colnames(data) = data[1,]
-colnames(data)[16:28] = readLines("Dictionaries/PAHs_names.txt")
+colnames(data)[16:28] = readLines("../Dictionaries/PAHs_names.txt")
 pahs <- data[-c(1:2),]
 rownames(pahs) = pahs$identifiant
 dim(pahs)    # 682   28
@@ -238,7 +238,7 @@ saveRDS(pest, "../Data/PesticidesPCBBDEs.rds")
 write.csv(pest, paste0("../Exports/PesticidesPCBBDEs.csv"))
 saveRDS(pahs, "../Data/PAHs.csv")
 write.csv(pahs, paste0("../Exports/PAHs.csv"))
-saveRDS(pahs, "../Data/Combined.csv")
+saveRDS(pahs, "../Data/Combined.rds")
 write.csv(pahs, paste0("../Exports/Combined.csv"))
 
 
