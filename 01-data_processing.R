@@ -90,6 +90,15 @@ dev.off()
 pest_lod = apply(pest_expo, 2,function(x) suppressWarnings(min(as.numeric(unlist(x)), na.rm = T)))
 pahs_lod = apply(pahs_expo, 2,function(x) suppressWarnings(min(as.numeric(unlist(x)), na.rm = T)))
 
+### Save exposure information
+pest_info = data.frame(lod = pest_lod, ndprop = pest_nd_prop, naprop = pest_na_prop,
+                       row.names = colnames(pest_expo))
+pahs_info = data.frame(lod = pahs_lod, ndprop = pahs_nd_prop, naprop = pahs_na_prop,
+                       row.names = colnames(pahs_expo))
+
+saveRDS(pest_info, "../Processed/PesticidesPCBBDEs_info.rds")
+saveRDS(pahs_info, "../Processed/PAHs_info.rds")
+
 ### Replace nd with random values from 0 to minimum detection (Gaussian)
 for(k in 1:ncol(pest_expo)){
   pest_expo[which(pest_expo[,k]=="nd"),k] = rtruncnorm(sum(pest_expo[,k]=="nd", na.rm = T),min=0,max=pest_lod[k]) 
@@ -174,3 +183,14 @@ saveRDS(pahs_expo_imp_log, "../Processed/PAHs_ndimp_naimp_log.rds")
 write.csv(pahs_expo_imp_log, paste0("../Exports/PAHs_ndimp_naimp_log.csv"))
 saveRDS(comb_expo_imp_log, "../Processed/Combined_ndimp_naimp_log.rds")
 write.csv(comb_expo_imp_log, paste0("../Exports/Combined_ndimp_naimp_log.csv"))
+
+pest[,20:ncol(pest)] = pest_expo_imp_log
+pahs[,20:ncol(pahs)] = pahs_expo_imp_log
+comb[,20:ncol(comb)] = comb_expo_imp_log
+
+saveRDS(pest, "../Processed/PesticidesPCBBDEs_XY.rds")
+write.csv(pest, paste0("../Exports/PesticidesPCBBDEs_XY.csv"))
+saveRDS(pahs, "../Processed/PAHs_XY.rds")
+write.csv(pahs, paste0("../Exports/PAHs_XY.csv"))
+saveRDS(comb, "../Processed/Combined_XY.rds")
+write.csv(comb, paste0("../Exports/Combined_XY.csv"))
