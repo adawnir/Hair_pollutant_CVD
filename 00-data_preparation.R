@@ -83,6 +83,12 @@ class(pest$WC_cat)
 
 ## Outcome ascertainment
 
+# Obesity
+pest$Obesity = ifelse(pest$BMI <30, "No","Yes")
+table(pest$Obesity)
+pest$Obesity = factor(pest$Obesity)
+class(pest$Obesity)
+
 # Hypertension
 summary(pest$SysBP)
 summary(pest$DiaBP)
@@ -129,7 +135,7 @@ table(pest$`Metabolic syndrome`)
 
 ## Reorder columns
 colnames(pest)
-pest = pest[,c(1:13,47:52,14:46)]
+pest = pest[,c(1:13,47:53,14:46)]
 
 # Remove redundant covariate
 pahs = pahs[,-which(colnames(pahs) %in% c("ldl_hdl","Is the subject fasting?"))]
@@ -180,6 +186,12 @@ class(pahs$WC_cat)
 
 ## Outcome ascertainment
 
+# Obesity
+pahs$Obesity = ifelse(pahs$BMI <30, "No","Yes")
+table(pahs$Obesity)
+pahs$Obesity = factor(pahs$Obesity)
+class(pahs$Obesity)
+
 # Hypertension
 summary(pahs$SysBP)
 summary(pahs$DiaBP)
@@ -226,11 +238,11 @@ table(pahs$`Metabolic syndrome`)
 
 ## Reorder columns
 colnames(pahs)
-pahs = pahs[,c(1:13,27:32,14:26)]
+pahs = pahs[,c(1:13,27:33,14:26)]
 
 ## Overlapping participants
 comb = cbind(pest[(intersect(pest$ID, pahs$ID)),],
-             pahs[(intersect(pest$ID, pahs$ID)),20:ncol(pahs)])
+             pahs[(intersect(pest$ID, pahs$ID)),21:ncol(pahs)])
 colnames(comb)
 
 str(comb)
