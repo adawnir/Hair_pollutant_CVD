@@ -233,6 +233,10 @@ comb = cbind(pest[(intersect(pest$ID, pahs$ID)),],
              pahs[(intersect(pest$ID, pahs$ID)),20:ncol(pahs)])
 colnames(comb)
 
+str(comb)
+
+comb = comb %>% mutate_if(is.factor,droplevels)
+
 ifelse(dir.exists("../Exports/"), "", dir.create("../Exports/"))
 saveRDS(pest, "../Data/PesticidesPCBBDEs.rds")
 write.csv(pest, paste0("../Exports/PesticidesPCBBDEs.csv"))
