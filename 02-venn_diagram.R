@@ -23,7 +23,7 @@ for (i in 1:3){
   mycolours = c("orange","lightcoral", "skyblue", "limegreen", "purple")
   mynames = paste0(c("Obesity", "Hypertension", "Diabetes", "Lipid disorder", "Metabolic syndrome"), 
                  " (N=", sapply(mylist, length), ")")
-  venn.diagram(mylist, filename = paste0("../Figures/",filepaths[i],"_venn_diagram_outcome.tiff"),
+  venn.diagram(mylist, filename = paste0("../Figures/Venn_diagram_outcome_",filepaths[i],".tiff"),
                fill = mycolours, fontfamily ="sans", cat.fontfamily ="sans",
                print.mode=c("raw"), cex = 0.8, cat.cex = 0.8,
                category.names = mynames, imagetype = "tiff", 
