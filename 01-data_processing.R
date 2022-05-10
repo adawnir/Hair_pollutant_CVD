@@ -15,9 +15,9 @@ comb = readRDS("../Data/Combined.rds")
 
 # Subset exposures
 colnames(pest)
-pest_expo = pest[,20:ncol(pest)]
+pest_expo = pest[,21:ncol(pest)]
 colnames(pahs)
-pahs_expo = pahs[,20:ncol(pahs)]
+pahs_expo = pahs[,21:ncol(pahs)]
 
 ## Proportion of NAs per chemical compounds ----
 pest_na_prop = apply(pest_expo, 2, function(x) sum(is.na(x))/nrow(pest_expo))
@@ -184,9 +184,9 @@ write.csv(pahs_expo_imp_log, paste0("../Exports/PAHs_ndimp_naimp_log.csv"))
 saveRDS(comb_expo_imp_log, "../Processed/Combined_ndimp_naimp_log.rds")
 write.csv(comb_expo_imp_log, paste0("../Exports/Combined_ndimp_naimp_log.csv"))
 
-pest[,20:ncol(pest)] = pest_expo_imp_log
-pahs[,20:ncol(pahs)] = pahs_expo_imp_log
-comb[,20:ncol(comb)] = comb_expo_imp_log
+pest[,21:ncol(pest)] = pest_expo_imp_log
+pahs[,21:ncol(pahs)] = pahs_expo_imp_log
+comb[,21:ncol(comb)] = comb_expo_imp_log
 
 saveRDS(pest, "../Processed/PesticidesPCBBDEs_XY.rds")
 write.csv(pest, paste0("../Exports/PesticidesPCBBDEs_XY.csv"))
