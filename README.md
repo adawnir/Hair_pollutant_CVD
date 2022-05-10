@@ -1,13 +1,14 @@
 # Associations between environmental pollutants from hair and cardiovascular risk factors
 
-Recommended workflow:
-DATA PROCESSING:
-00-data_preparation.R
-Explore_pest.R, Explore_pahs.R, Explore_overlap.R: Descriptive analyses, correlation
-  Imputation_nd.R: Recode non detectded data and impute mising data
-  Make_uni_multi_data.R: Recode variables and make data for following analyses + create overlapping dataset
+Below is the recommended workflow for this project:  
+## Data preparation and processing
+1. 00-data_preparation.R: Cleaning data and outcome ascertainment
+2. 01-data_processing.R: Missing/detection rate, nd imputation, log transformation and NA imputation
 
-DESCRIPTIVE ANALYSIS:
+## Descriptive analysis
+1. 02-expo_distribution.R: Distribution of exposure stratified by country
+2. 02-naimp_diagnostics.R: Distribution of exposure comparing observed and imputed values
+
   descriptive_by_country.R
   conc_country.R: Run test on concentration by countries
   correlation.R: check log-transformed levels as Gaussian is not too big of an assumption
