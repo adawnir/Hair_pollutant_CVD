@@ -53,7 +53,7 @@ for (i in 1:3){
   
   ifelse(dir.exists("../Results"),"",dir.create("../Results"))
   saveRDS(pvals0, paste0("../Results/",filepaths[i],"_univariate_age_gender_pvals.rds"))
-  saveRDS(betas0, paste0("../Results/",filepaths[i],"_univariate__age_gender_country_betas.rds"))
+  saveRDS(betas0, paste0("../Results/",filepaths[i],"_univariate_age_gender_betas.rds"))
   saveRDS(pvals1, paste0("../Results/",filepaths[i],"_univariate_age_gender_country_pvals.rds"))
-  saveRDS(betas1, paste0("../Results/",filepaths[i],"_univariate__age_gender_country_betas.rds"))
+  saveRDS(betas1, paste0("../Results/",filepaths[i],"_univariate_age_gender_country_betas.rds"))
 }

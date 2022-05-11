@@ -1,6 +1,10 @@
 ## Graph colours
 
 # Country
+outcome.colours = c("orange","lightcoral", "skyblue", "limegreen", "purple")
+names(outcome.colours) = c("Obesity", "Hypertension", "Diabetes", "Lipid disorder", "Metabolic syndrome")
+
+# Outcome
 country.colours = c("forestgreen","royalblue","tomato")
 names(country.colours) = c("Belgium","France","Luxembourg")
 
