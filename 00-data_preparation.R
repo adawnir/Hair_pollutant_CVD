@@ -255,11 +255,11 @@ comb = comb %>% mutate_if(is.factor,droplevels)
 
 ifelse(dir.exists("../Exports/"), "", dir.create("../Exports/"))
 saveRDS(pest, "../Data/PesticidesPCBBDEs.rds")
-write.csv(pest, paste0("../Exports/PesticidesPCBBDEs.csv"))
+write.csv(pest, "../Exports/PesticidesPCBBDEs.csv")
 saveRDS(pahs, "../Data/PAHs.rds")
-write.csv(pahs, paste0("../Exports/PAHs.csv"))
+write.csv(pahs, "../Exports/PAHs.csv")
 saveRDS(comb, "../Data/Combined.rds")
-write.csv(comb, paste0("../Exports/Combined.csv"))
+write.csv(comb, "../Exports/Combined.csv")
 
 
 
