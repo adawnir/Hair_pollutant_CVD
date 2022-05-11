@@ -132,6 +132,8 @@ table(score)
 
 pest$`Metabolic syndrome` = ifelse(score>=3, "Yes", "No")
 table(pest$`Metabolic syndrome`)
+pest$`Metabolic syndrome` = factor(pest$`Metabolic syndrome`)
+class(pest$`Metabolic syndrome`)
 
 ## Reorder columns
 colnames(pest)
@@ -235,6 +237,8 @@ table(score)
 
 pahs$`Metabolic syndrome` = ifelse(score>=3, "Yes", "No")
 table(pahs$`Metabolic syndrome`)
+pahs$`Metabolic syndrome` = factor(pahs$`Metabolic syndrome`)
+class(pahs$`Metabolic syndrome`)
 
 ## Reorder columns
 colnames(pahs)
