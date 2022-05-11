@@ -14,14 +14,14 @@ library(focus)
 
 # Load custom
 source("functions.R")
-source("graph_param.R")
+source("graph_colours.R")
 
 ## Parameters
 args=commandArgs(trailingOnly=TRUE)
 m=as.numeric(args[1])
 
 # Load data sets
-annot = readRDS("../Data/Compound_family_annotation.rds")
+annot = readRDS("../Data/Compounds_family_annotation.rds")
 
 filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
 for (i in 1:3){
