@@ -16,8 +16,8 @@ Below is the recommended workflow for this project:
 8. 03-graphical_lasso_network_visualisation.R, Visualisation and inspection of graphical lasso network of exposures
 
 ## Univariate analyses
-1. univariate_analyses.R
-2. univariate_analyses_viz.R
+1. univariate_analyses.R: Univariate analyses of association between exposures and outcomes
+2. univariate_analyses_viz.R: Visualisation of uivariate analyses
 
 ## Multivariate analyses
   Denoised.R, Divide_by_outcomes.R, split_train_test.R

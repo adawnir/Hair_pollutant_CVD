@@ -1,96 +1,23 @@
 ## Graphical Lasso Network Visualisation
 
 rm(list=ls())
-project_path="~/hair/scripts"
+project_path=dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(project_path)
 
-source("penalisation_functions.R")
-
-##### Load dataset
-out_pest <- readRDS("../results/Network/calib_network_obj_pest.rds")
-adj_mat_pest = readRDS("../results/Network/adj_mat_pest.rds")
-
-out_pahs <- readRDS("../results/Network/calib_network_obj_pahs.rds")
-adj_mat_pahs <- readRDS("../results/Network/adj_mat_pahs.rds")
-
-out_pest_L <- readRDS("../results/Network/calib_network_obj_pest_L.rds")
-GetArgmax(out_pest_L)
-
-out_pest_B <- readRDS("../results/Network/calib_network_obj_pest_B.rds")
-GetArgmax(out_pest_B)
-
-out_pest_F <- readRDS("../results/Network/calib_network_obj_pest_F.rds")
-GetArgmax(out_pest_F)
-
-out_pahs_L <- readRDS("../results/Network/calib_network_obj_pahs_L.rds")
-GetArgmax(out_pahs_L)
-
-out_pahs_B <- readRDS("../results/Network/calib_network_obj_pahs_B.rds")
-GetArgmax(out_pahs_B)
-
-
-##### Selection proportion --
-### Pest
-argmax_id <- GetArgmaxId(out_pest)
-selprop_pest  <- out_pest$selprop[,,argmax_id[1]]
-GetArgmax(out_pest)
-
-# γ-HCH
-out_pest$selprop[, "gamma_HCH", argmax_id[1,1]] %>% sort(decreasing = T)
-
-# Cl2CA  
-out_pest$selprop[, "Cl2CA", argmax_id[1,1]] %>% sort(decreasing = T)
-
-# Diflufenican 
-out_pest$selprop[, "Fipronil", argmax_id[1,1]] %>% sort(decreasing = T)
-
-# TCPy   
-out_pest$selprop[, "PCP", argmax_id[1,1]] %>% sort(decreasing = T)
-
-# PBC series
-out_pest$selprop[, "PCB_138", argmax_id[1,1]] %>% sort(decreasing = T)
-out_pest$selprop[, "PCB_153", argmax_id[1,1]] %>% sort(decreasing = T)
-out_pest$selprop[, "PCB_180", argmax_id[1,1]] %>% sort(decreasing = T)
-
-
-### PAHs
-argmax_id <- GetArgmaxId(out_pahs)
-selprop_pahs <- out_pahs$selprop[,,argmax_id[1]]
-GetArgmax(out_pahs)
-
-# Cotinine (ng/mg)
-out_pahs$selprop[, "Cotinine", argmax_id[1,1]] %>% sort(decreasing = T)
-
-##### Adjacency matrix --
-dim(adj_mat_pest)
-
-sort(rowSums(adj_mat_pest),decreasing = TRUE)
-selected = rownames(adj_mat_pest)[rowSums(adj_mat_pest)>0]
-
-sort(rowSums(adj_mat_pahs),decreasing = TRUE)
-
-# Load packages
 library(tidyverse)
 library(igraph)
 library(colorspace)
 library(focus)
 library(grid)
 
-# Initialise
-rm(list=ls())
-path=dirname(rstudioapi::getActiveDocumentContext()$path)
-setwd(path)
+source("graph_colours.R")
 
-annot = readRDS("../Data/Chemical_compound_family_annotation.rds")
-suffix = c("lux17", "lux21","fra","gs","pooled","sensitivity")
+annot = readRDS("../Data/Compound_family_annotation.rds")
 
-# Load custom
-source("functions.R")
-source("graph_param.R")
-
-for (m in 1:length(batches)){
-  A = readRDS(paste0("../Results/",filepaths[m],"/Graphical_network_exposures_adjacency_matrix.rds"))
-  expo = readRDS(paste0("../Processed/",filepaths[m],"/Exposure_matrix_ndimp_thresh_log_naimp.rds"))
+filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
+for (m in 1:length(filepaths)){
+  A = readRDS(paste0("../Results/",filepaths[m],"_graphical_network_exposures_output.rds"))
+  expo = readRDS(paste0("../Processed/",filepaths[m],"_ndimp_naimp_log.rds"))
   
   annot_sub = annot[colnames(expo)]
   mynode_colour = annot.colours[annot_sub]
@@ -99,23 +26,7 @@ for (m in 1:length(batches)){
   # Getting igraph object
   mygraph=Graph(adjacency=A,node_colour=mynode_colour)
   
-  # # Increase vertex size
-  # V(mygraph)$size = V(mygraph)$size + 3
-  # 
-  # pdf(paste0("../Figures/",filepaths[m],"/Graphical_network_exposures.pdf"))
-  # par(mar=c(0,0,5,0), xpd = TRUE)
-  # set.seed(1)
-  # plot(mygraph, layout=layout_with_fr(mygraph),
-  #      vertex.label.cex = 0.65)
-  # legend("top",pch=19,
-  #        inset=c(0,-0.15),
-  #        col = annot.colours[unique(annot_sub)],
-  #        legend = unique(annot_sub), cex = 0.6,
-  #        ncol = ceiling(length(unique(annot_sub)))/5,
-  #        bty = "n")
-  # dev.off()
-  
-  ### Community detection
+  ## Community detection
   # Louvain
   lc = cluster_louvain(mygraph)
   
@@ -131,7 +42,7 @@ for (m in 1:length(batches)){
   V(mygraph)$size = V(mygraph)$size + 5
   
   # Plot clusters in graph
-  pdf(paste0("../Figures/Section1/Graphical_network_exposures_community_",suffix[m],".pdf"))
+  pdf(paste0("../Figures/Graphical_network_exposures_community_",filepaths[m],".pdf"))
   par(mar=rep(1,4), xpd = TRUE)
   set.seed(1)
   plot(mygraph, layout=layout_with_fr(mygraph),
@@ -142,7 +53,7 @@ for (m in 1:length(batches)){
   dev.off()
 }
 
-{pdf("../Figures/Section1/Graphical_network_exposures_legend.pdf", height = 5, width = 4)
+{pdf("../Figures/Graphical_network_exposures_legend.pdf", height = 3, width = 3)
   grid.newpage()
   for(e in 1:length(annot.colours)) {
     grid.circle(
