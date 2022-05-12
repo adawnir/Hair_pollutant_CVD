@@ -22,7 +22,7 @@ for (i in 1:3){
   # Scale exposures
   expo = scale(expo)
   
-  # Logistic regession
+  # Logistic regression
   ncol(Y) * ncol(expo) # number of tests
   betas0 = pvals0 = betas1 = pvals1 = NULL
   f0='Y[,k] ~ expo[,j] + data$Age + data$Gender'
