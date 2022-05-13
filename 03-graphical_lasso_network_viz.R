@@ -7,7 +7,7 @@ setwd(project_path)
 library(tidyverse)
 library(igraph)
 library(colorspace)
-library(focus)
+library(focus) # library(sharp)
 library(grid)
 
 source("graph_colours.R")
