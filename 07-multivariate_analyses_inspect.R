@@ -61,6 +61,7 @@ for (i in 1:length(myfiles)){
 
 ## Recalibration and Predictive performance----
 myfiles = list.files(path = "../Results", pattern = "Multivariate_analysis_output_*")
+
 for (i in 1:length(myfiles)){
   # Load data
   split = strsplit(myfiles[i], "_(?!.*_)", perl=TRUE)[[1]]
@@ -85,13 +86,38 @@ for (i in 1:length(myfiles)){
   Y_test=Y[-train]
   X_test=X[-train,]
   
+  # Scale data
+  X_train = scale(X_train)
+  X_test = scale(X_test)
+  
   vars=c("Age","Gender",names(SelectedVariables(out)[SelectedVariables(out)==1]))
   
-  f0 = 'Y_train ~ .' 
-  model0=glm(as.formula(f0), data = X_train[vars])
-  beta  = coefficients(model0)[-1]
-  predictions=predict(model0, newdata=X_test[,vars])
-  myroc=roc(Y_test, predictions)
-  saveRDS(beta, paste0("../Results/",gsub("output","beta",myfiles[i])))
-  saveRDS(myroc, paste0("../Results/",gsub("output","ROC",myfiles[i])))
+  # Computing AUCs on the test set from models where predictors are added in order of decreasing selection proportion
+  selprop = SelectionProportions(out)
+  selprop_nonzero = selprop[SelectedVariables(out)==1]
+  myorder = names(selprop_nonzero)[sort.list(selprop_nonzero, decreasing = TRUE)]
+  myorder = c("Age","Gender",myorder)
+  calib = sum(SelectedVariables(out)==1)+2
+  
+  myaucs = NULL
+  myaucs_table = NULL
+  for (k in 1:length(myorder)){
+    # Recalibration of the beta coefficients on the training set
+    tmp = X_train[,myorder[1:k],drop=FALSE]
+    mymodel_recalib=glm(Y_train ~., data = as.data.frame(tmp), family="binomial")
+    # Prediction using a logistic model with recalibrated beta coefficients
+    tmp = as.matrix(X_test[,myorder[1:k],drop=FALSE])%*%as.matrix(coef(mymodel_recalib)[-1], ncol=1)
+    mymodel=glm(Y_test ~., data = as.data.frame(offset(tmp)), family="binomial")
+    myroc=roc(response=Y_test, predictor=mymodel$fitted.values)
+    if(k==calib){
+      saveRDS(myroc, paste0("../Results/",gsub("output","ROC",myfiles[i])))
+      beta = coef(mymodel_recalib)[-1]
+      saveRDS(beta, paste0("../Results/",gsub("output","beta",myfiles[i])))
+    }
+    myaucs=c(myaucs, myroc$auc)
+    myaucs_table=rbind(myaucs_table, formatC(as.numeric(ci.auc(myroc)), format="f", digits=2))
+  }
+  rownames(myaucs_table)=myorder
+  colnames(myaucs_table)=c("li","auc","ui")
+  saveRDS(myaucs_table, paste0("../Results/",gsub("output","AUC",myfiles[i])))
 }

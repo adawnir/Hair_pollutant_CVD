@@ -20,10 +20,9 @@ Below is the recommended workflow for this project:
 2. univariate_analyses_viz.R: Visualisation of uivariate analyses
 
 ## Multivariate analyses
-  Denoised.R, Divide_by_outcomes.R, split_train_test.R
-  LASSO.R, LASSO_viz.R: LASSO models for univariate Y
-  sPLS_uni_y.R, sPLS_uni_y_viz.R: sPLS models for univariate Y
-  Pred_perf.R: Prediction performance of all the models and inspect lasso models
+1. 06-multivariate_analyses.R: Stability-based LASSO logistic regression per CVDRF outcome
+2. 07-multivariate_analyses_inspect.R: Inspection of stability-based LASSO logistic regression, recalibration and prediction
+3. 08-multivariate_analyses_viz.R: Visulisation of stability-based LASSO logistic regression
 
 ## Sensitivity analyses
   ./strat_sex/: LASSO and sPLS stratified by sex 

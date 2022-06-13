@@ -38,7 +38,7 @@ for (m in 1:3){
     Y_train=Y[train,k]
     X_train=X[train,]
     
-    if(table(Y_train)[2]<8){
+    if(table(Y_train)[2]<16){
       next
     } else{
       t0=Sys.time()

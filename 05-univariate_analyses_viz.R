@@ -5,6 +5,7 @@ project_path=dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(project_path)
 
 source("graph_colours.R")
+library(colorspace)
 
 ## Main analysis: Using all available data ----
 annot = readRDS("../Data/Compound_family_annotation.rds")
@@ -30,7 +31,7 @@ for (i in 1:2){
          col=ifelse(pvals[k,] < 0.05/ncol(betas), annot.colours[annot_sub], "grey"),
          cex.lab=1.5, cex = 3,
          main = rownames(pvals)[k],
-         ylim = c(0, max(-log10(pvals[k,])-log10(0.05/ncol(betas)))+0.3),
+         ylim = c(0, max(-log10(pvals[k,]),-log10(0.05/ncol(betas)))+0.3),
          xlim = c(-max(abs(betas[k,]))-0.2, max(abs(betas[k,]))+0.2),
          ylab=expression(-log[10](italic(p))),
          xlab=expression(beta))

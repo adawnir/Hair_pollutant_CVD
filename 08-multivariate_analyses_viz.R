@@ -9,6 +9,7 @@ library(colorspace)
 library(tidyverse)
 library(sharp)
 library(pROC)
+library(plotrix)
 
 annot = readRDS("../Data/Compound_family_annotation.rds")
 
@@ -81,40 +82,63 @@ for (i in 1:length(myfiles)){
   dev.off()
 }
 
-## Compare predictive performance between outcomes per data set ----
-myfiles = list.files(path = "../Results", pattern = "Multivariate_analysis_ROC_*")
+## AUCs when sequentially adding predictors in order of decreasing selection proportion ----
+myfiles = list.files(path = "../Results", pattern = "Multivariate_analysis_AUC_*")
 myfiles = myfiles[-7] # exclude empty model
-filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
-title = c("POPs and non-persistent pesticides","Tobacco-related chemicals and PAH metabolites",
-          "Combined")
-for (i in 1:3){
-  myfiles_sub = myfiles[grepl(filepaths[i],myfiles)]
-  pdf(paste0("../Figures/Multivariate_analysis_ROC_",filepaths[i],".pdf"), width = 5, height = 5.5)
-  par(mar=c(5,5,3,1))
-  plot(0, type = "n",
-       ylim = c(0,1),
-       xlim = c(0,1),
-       xlab = "False Positive Rate", ylab = "True Positive Rate",
-       main = title[i], cex.main = 1)
-  myauc = NULL
-  for (k in 1:length(myfiles_sub)){
-    myroc = readRDS(paste0("../Results/",myfiles_sub[k]))
-    myauc = c(myauc, round(as.numeric(myroc$auc),2))
-    coords = pROC::coords(myroc, methods = "all")[,-1]
-    coords[,1] = 1-coords[,1]
-    
-    split = strsplit(myfiles_sub[k], "_(?!.*_)", perl=TRUE)[[1]]
-    outcome_type = gsub("Multivariate_analysis_ROC_","",split[1]) %>% gsub("_"," ",.)
-    lines(coords, col = outcome.colours[outcome_type])
-  }
-  split = sapply(myfiles_sub, function(x) strsplit(x, "_(?!.*_)", perl=TRUE)[[1]])
-  outcome_type = gsub("Multivariate_analysis_ROC_","",split[1,]) %>% gsub("_"," ",.)
-  label = outcome_type[match(names(outcome.colours), outcome_type, nomatch = 0)]
-  myauc = myauc[match(names(outcome.colours), outcome_type, nomatch = 0)]
-  abline(0,1, lty = 3, col = "grey")
-  legend("bottomright",
-         legend = c(paste0(label,": AUC = ",myauc)),
-         lty = 1, col = outcome.colours[label], cex = 0.8)
+for (i in 1:length(myfiles)){
+  # Load data
+  split = strsplit(myfiles[i], "_(?!.*_)", perl=TRUE)[[1]]
+  data_type = split[2] %>% gsub(".rds","",.)
+  outcome_path = gsub("Multivariate_analysis_output_","",split[1])
+  outcome_type = gsub("_"," ",outcome_type)
+  myauc = readRDS(paste0("../Results/",myfiles[i]))
+  vars = rownames(myauc)
+  
+  pdf(paste0("../Figures/",myfiles[i],".pdf"), width=5, height=5)
+  par(mar=c(10,5,1,1))
+  plotCI(x=1:nrow(myauc), y=as.numeric(myauc[,2]),
+         li=as.numeric(myauc[,1]), ui=as.numeric(myauc[,3]),
+         xaxt="n", xlab="",
+         pch=19, col = outcome.colours[outcome_type],
+         ylab="AUC", ylim=c(0,1))
+  axis(side=1, at=1:nrow(myauc), labels=rownames(myauc), las=2)
+  abline(h=myauc[nrow(myauc),2], col="darkred", lty=2)
   dev.off()
-}
+  }
+
+
+
+# filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
+# title = c("POPs and non-persistent pesticides","Tobacco-related chemicals and PAH metabolites",
+#           "Combined")
+# for (i in 1:3){
+#   myfiles_sub = myfiles[grepl(filepaths[i],myfiles)]
+#   pdf(paste0("../Figures/Multivariate_analysis_ROC_",filepaths[i],".pdf"), width = 5, height = 5.5)
+#   par(mar=c(5,5,3,1))
+#   plot(0, type = "n",
+#        ylim = c(0,1),
+#        xlim = c(0,1),
+#        xlab = "False Positive Rate", ylab = "True Positive Rate",
+#        main = title[i], cex.main = 1)
+#   myauc = NULL
+#   for (k in 1:length(myfiles_sub)){
+#     myroc = readRDS(paste0("../Results/",myfiles_sub[k]))
+#     myauc = c(myauc, round(as.numeric(myroc$auc),2))
+#     coords = pROC::coords(myroc, methods = "all")[,-1]
+#     coords[,1] = 1-coords[,1]
+#     
+#     split = strsplit(myfiles_sub[k], "_(?!.*_)", perl=TRUE)[[1]]
+#     outcome_type = gsub("Multivariate_analysis_ROC_","",split[1]) %>% gsub("_"," ",.)
+#     lines(coords, col = outcome.colours[outcome_type])
+#   }
+#   split = sapply(myfiles_sub, function(x) strsplit(x, "_(?!.*_)", perl=TRUE)[[1]])
+#   outcome_type = gsub("Multivariate_analysis_ROC_","",split[1,]) %>% gsub("_"," ",.)
+#   label = outcome_type[match(names(outcome.colours), outcome_type, nomatch = 0)]
+#   myauc = myauc[match(names(outcome.colours), outcome_type, nomatch = 0)]
+#   abline(0,1, lty = 3, col = "grey")
+#   legend("bottomright",
+#          legend = c(paste0(label,": AUC = ",myauc)),
+#          lty = 1, col = outcome.colours[label], cex = 0.8)
+#   dev.off()
+# }
 
