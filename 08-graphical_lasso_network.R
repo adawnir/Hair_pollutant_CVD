@@ -24,29 +24,27 @@ m=as.numeric(args[1])
 annot = readRDS("../Data/Compounds_family_annotation.rds")
 
 filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
-for (i in 1:3){
-  # Load data
-  expo = readRDS(paste0("../Processed/",filepaths[m],"_ndimp_naimp_log.rds"))
-  
-  # Standardisaiton
-  expo = scale(expo)
-  
-  # Running stability selection
-  t0=Sys.time()
-  out=GraphicalModel(xdata=expo, PFER_thr=20)
-  t1=Sys.time()
-  print(t1-t0)
-  ifelse(dir.exists("../Results/"),"",dir.create("../Results/"))
-  saveRDS(out, paste0("../Results/",filepaths[m],"_graphical_network_exposures_output.rds"))
-  
-  ifelse(dir.exists("../Figures/"),"",dir.create("../Figures/"))
-  pdf(paste0("../Figures/Graphical_network_exposures_output_",filepaths[m],".pdf"))
-  par(mar = c(7,5,7,6))
-  CalibrationPlot(out)
-  dev.off()
-  
-  # Adjacency matrix of the calibrated network
-  A=Adjacency(out)
-  saveRDS(A, paste0("../Results/",filepaths[m],"_graphical_network_exposures_adjacency_matrix.rds"))
-}
+# Load data
+expo = readRDS(paste0("../Processed/",filepaths[m],"_ndimp_naimp_log.rds"))
+
+# Standardisaiton
+expo = scale(expo)
+
+# Running stability selection
+t0=Sys.time()
+out=GraphicalModel(xdata=expo, PFER_thr=20)
+t1=Sys.time()
+print(t1-t0)
+ifelse(dir.exists("../Results/"),"",dir.create("../Results/"))
+saveRDS(out, paste0("../Results/",filepaths[m],"_graphical_network_exposures_output.rds"))
+
+ifelse(dir.exists("../Figures/"),"",dir.create("../Figures/"))
+pdf(paste0("../Figures/Graphical_network_exposures_output_",filepaths[m],".pdf"))
+par(mar = c(7,5,7,6))
+CalibrationPlot(out)
+dev.off()
+
+# Adjacency matrix of the calibrated network
+A=Adjacency(out)
+saveRDS(A, paste0("../Results/",filepaths[m],"_graphical_network_exposures_adjacency_matrix.rds"))
 
