@@ -55,8 +55,9 @@ filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
 annot = readRDS("../Data/Compound_family_annotation.rds")
 
 for (i in 1:3){
-  data = readRDS(paste0("../Processed/",filepaths[i],"_XY.rds"))
-  expo = data[,30:ncol(data)]
+  data = readRDS(paste0("../Data/",filepaths[i],".rds"))
+  expo = readRDS(paste0("../Processed/",filepaths[i],"_ndimp_naimp_log.rds"))
+  
   annot_sub = annot[colnames(expo)]
   
   mytable=NULL

@@ -11,12 +11,14 @@ library(FactoMineR)
 source("functions.R")
 source("graph_colours.R")
 
+## Exposures ----
 annot = readRDS("../Data/Compound_family_annotation.rds")
 
 filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
 for (i in 1:3){
-  data = readRDS(paste0("../Processed/",filepaths[i],"_XY.rds"))
-  expo = data[,21:ncol(data)]
+  # Load data
+  data = readRDS(paste0("../Data/",filepaths[i],".rds"))
+  expo = readRDS(paste0("../Processed/",filepaths[i],"_ndimp_naimp_log.rds"))
   print(ncol(expo))
   
   mypca=PCA(expo, graph = FALSE)

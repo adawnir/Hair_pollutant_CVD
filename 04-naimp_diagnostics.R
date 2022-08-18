@@ -16,14 +16,7 @@ outer = rbind(pest[setdiff(pest$ID, pahs$ID),7:11],
               comb[,7:11])
 colnames(outer)
 
-pest_nutri_imp = readRDS("../Processed/PesticidesPCBBDEs_nutri_naimp.rds")
-pahs_nutri_imp = readRDS("../Processed/PAHs_nutri_naimp.rds")
-comb_nutri_imp = readRDS("../Processed/Combined_nutri_naimp.rds")
-
-outer_imp = rbind(pest_nutri_imp[setdiff(pest$ID, pahs$ID),],
-                  pahs_nutri_imp[setdiff(pahs$ID, pest$ID),],
-                  comb_nutri_imp)
-colnames(outer_imp)
+outer_imp = readRDS("../Processed/All_participants_nutri_naimp.rds")
 
 # Distribution of imputed values and observed values
 isna = colnames(outer)[apply(outer, 2, function(x) sum(is.na(x))>1)]

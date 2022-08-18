@@ -21,7 +21,7 @@ args=commandArgs(trailingOnly=TRUE)
 m=as.numeric(args[1])
 
 # Load data sets
-annot = readRDS("../Data/Compounds_family_annotation.rds")
+annot = readRDS("../Data/Compound_family_annotation.rds")
 
 filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
 # Load data

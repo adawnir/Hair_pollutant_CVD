@@ -192,16 +192,8 @@ outer_imp = imp$ximp
 colnames(outer_imp) = colnames(outer)
 rownames(outer_imp) = rownames(outer)
 
-pest_nutri_imp = outer_imp[pest$ID,]
-pahs_nutri_imp = outer_imp[pahs$ID,]
-comb_nutri_imp = outer_imp[comb$ID,]
-
-saveRDS(pest_nutri_imp, "../Processed/PesticidesPCBBDEs_nutri_naimp.rds")
-write.csv(pest_nutri_imp, paste0("../Exports/PesticidesPCBBDEs_nutri_naimp.csv"))
-saveRDS(pahs_nutri_imp, "../Processed/PAHs_nutri_naimp.rds")
-write.csv(pahs_nutri_imp, paste0("../Exports/PAHs_nutri_naimp.csv"))
-saveRDS(comb_nutri_imp, "../Processed/Combined_nutri_naimp.rds")
-write.csv(comb_nutri_imp, paste0("../Exports/Combined_nutri_naimp.csv"))
+saveRDS(outer_imp, "../Processed/All_participants_nutri_naimp.rds")
+write.csv(outer_imp, paste0("../Exports/All_participants_nutri_naimp.csv"))
 
 ## Log10 transformation ----
 pest_expo_imp_log = log10(pest_expo_imp)
@@ -218,20 +210,3 @@ saveRDS(pahs_expo_imp_log, "../Processed/PAHs_ndimp_naimp_log.rds")
 write.csv(pahs_expo_imp_log, paste0("../Exports/PAHs_ndimp_naimp_log.csv"))
 saveRDS(comb_expo_imp_log, "../Processed/Combined_ndimp_naimp_log.rds")
 write.csv(comb_expo_imp_log, paste0("../Exports/Combined_ndimp_naimp_log.csv"))
-
-## Reconstruct dataset ----
-
-pest[,7:11] = pest_nutri_imp
-pahs[,7:11] = pahs_nutri_imp
-comb[,7:11] = comb_nutri_imp
-
-pest[,30:ncol(pest)] = pest_expo_imp_log
-pahs[,30:ncol(pahs)] = pahs_expo_imp_log
-comb[,30:ncol(comb)] = comb_expo_imp_log
-
-saveRDS(pest, "../Processed/PesticidesPCBBDEs_XY.rds")
-write.csv(pest, paste0("../Exports/PesticidesPCBBDEs_XY.csv"))
-saveRDS(pahs, "../Processed/PAHs_XY.rds")
-write.csv(pahs, paste0("../Exports/PAHs_XY.csv"))
-saveRDS(comb, "../Processed/Combined_XY.rds")
-write.csv(comb, paste0("../Exports/Combined_XY.csv"))
