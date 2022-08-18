@@ -5,43 +5,27 @@ project_path=dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(project_path)
 
 library(tidyverse)
+library(readxl)
 library(colorspace)
 
+### Pesticides and POPs ----
 ## Extract exposure matrices
-data = read.csv("../Data/Dataset_PesticidesPCBBDEs.csv")
+data = read_excel("../Data/Dataset_Pesticides_PAHs_05242022.xlsx", sheet = 1)
 str(data)
-colnames(data) = data[1,]
-colnames(data)[16:48] = readLines("../Dictionaries/PesticidesPCBBDEs_names.txt")
-pest = data[-c(1:2),]
+colnames(data)[38:70] = readLines("../Dictionaries/PesticidesPCBBDEs_names.txt")
+pest = as.data.frame(data)
 rownames(pest) = pest$identifiant
-dim(pest)    # 1096   48
+dim(pest)    # 989   70
 
-data = read.csv("../Data/Dataset_PAHs.csv")
-colnames(data) = data[1,]
-colnames(data)[16:28] = readLines("../Dictionaries/PAHs_names.txt")
-pahs <- data[-c(1:2),]
-rownames(pahs) = pahs$identifiant
-dim(pahs)    # 682   28
-
-### Exclude participants with missing outcomes (clinical measurements)
-colnames(pest)[6:15]
-colnames(pahs)[6:15]
-pest = pest[complete.cases(pest[,6:15]),]
-pahs = pahs[complete.cases(pahs[,6:15]),]
-dim(pest)    # 1065   48
-dim(pahs)    # 670   28
-
-## Covariate information
-str(pest)
-str(pahs) 
-
-# Remove redundant covariate
-pest = pest[,-which(colnames(pest) %in% c("ldl_hdl","Is the subject fasting?"))]
+# Subset relevant columns
+pest = pest[,-which(colnames(pest) %in% c("Fasting","Alcohol","Education","Physical_activity",
+                                          "LDLC_HDLC","MetS_WC","MetS_TG","MetS_HDLC",
+                                          "MetS_BP","MetS_FPG"))]
 
 str(pest)
-colnames(pest)[1:13] = c("ID","Country","Gender","Age",
-                         "WC","BMI","SysBP","DiaBP",
-                         "TC","LDL-C", "HDL-C", "TG", "FPG")
+colnames(pest)[1] = "ID"
+colnames(pest)[20:22] = c("Diabetes_medication","Hypertension_medication","Lipid_disorder_medication")
+colnames(pest)[26:27] = c("Lipid_disorder","Metabolic_syndrome")
 
 # Set classes for variables
 class(pest$ID)
@@ -55,9 +39,13 @@ pest$Gender = factor(ifelse(pest$Gender=="F", "Female", "Male"))
 class(pest$Gender)
 pest$Gender = relevel(pest$Gender, "Male")
 
-pest[,4:13] = apply(pest[,4:13], 2, as.numeric)
+table(pest$Smoking)
+pest$Smoking = factor(pest$Smoking, 1:3, labels = c("Never smoker","Former smoker","Current smoker"))
 
 str(pest)
+
+## Exclude participants with >50% nutrient information missing
+pest = pest[rowSums(is.na(pest[7:11]))/5 < 0.5,]
 
 ## Covariate transformation
 summary(pest$BMI)
@@ -73,46 +61,43 @@ class(pest$BMI_cat)
 
 ### WC
 summary(pest$WC)
-pest$WC_cat = ifelse(pest$WC <102 & pest$Gender == "Male", "Normal",
-                     ifelse(pest$WC >=102 & pest$Gender == "Male", "High",
-                        ifelse(pest$WC <88 & pest$Gender == "Female", "Normal",
-                               "High")))
+pest$WC_cat = ifelse(pest$WC >=102 & pest$Gender == "Male", "High",
+                     ifelse(pest$WC >=88 & pest$Gender == "Female", "High","Normal"))
 table(pest$WC_cat)
 pest$WC_cat = factor(pest$WC_cat)
 class(pest$WC_cat)
 
 ## Outcome ascertainment
-
 # Obesity
-pest$Obesity = ifelse(pest$BMI <30, "No","Yes")
+# pest$Obesity = ifelse(pest$BMI <30, "No","Yes")
 table(pest$Obesity)
-pest$Obesity = factor(pest$Obesity)
+pest$Obesity = factor(pest$Obesity, 0:1, labels = c("No","Yes"))
 class(pest$Obesity)
 
 # Hypertension
-summary(pest$SysBP)
-summary(pest$DiaBP)
-pest$Hypertension = ifelse(pest$SysBP < 140 & pest$DiaBP < 90, "No","Yes")
+summary(pest$SBP)
+summary(pest$DBP)
+# pest$Hypertension = ifelse(pest$SysBP < 140 & pest$DiaBP < 90 & pest$Hypertension_medication == 01", "No","Yes")
 table(pest$Hypertension)
-pest$Hypertension = factor(pest$Hypertension)
+pest$Hypertension = factor(pest$Hypertension, 0:1, labels = c("No","Yes"))
 class(pest$Hypertension)
 
 # Diabetes
 summary(pest$FPG)
-pest$Diabetes = ifelse(pest$FPG < 126, "No","Yes")
+# pest$Diabetes = ifelse(pest$FPG < 126 & pest$Diabetes_medication == "0", "No","Yes")
 table(pest$Diabetes)
-pest$Diabetes = factor(pest$Diabetes)
+pest$Diabetes = factor(pest$Diabetes, 0:1, labels = c("No","Yes"))
 class(pest$Diabetes)
 
 # Lipid disorder
 # TC (total cholesterol) >= 190 mg/dl, TG (triglycerides) >= 150 mg/dl, 
 # LDL-C ≥ 115 mg/dl, and HDLC < 40 mg/dl for men and < 46 mg/dl for women
-pest$`Lipid disorder`=ifelse(pest$TC <190 & pest$TG <150 & pest$`LDL-C` <115 & pest$`HDL-C` >=40 & pest$Gender == "Male", "No",
-                             ifelse(pest$TC <190 & pest$TG <150 & pest$`LDL-C` <115 & pest$`HDL-C`>=46 & pest$Gender == "Female", "No",
-                                    "Yes"))
-table(pest$`Lipid disorder`)
-pest$`Lipid disorder` = factor(pest$`Lipid disorder`)
-class(pest$`Lipid disorder`)
+# pest$Lipid_disorder = ifelse(pest$TC <190 & pest$TG <150 & pest$LDLC <115 & pest$HDLC >=40 & pest$Lipid_disorder_medication == "0" & pest$Gender == "Male", "No",
+#                              ifelse(pest$TC <190 & pest$TG <150 & pest$LDLC <115 & pest$HDLC>=46 & pest$Lipid_disorder_medication == "0" & pest$Gender == "Female", "No",
+#                                     "Yes"))
+table(pest$Lipid_disorder)
+pest$Lipid_disorder = factor(pest$Lipid_disorder, 0:1, labels = c("No","Yes"))
+class(pest$Lipid_disorder)
 
 # Metabolic syndrome
 # 1) WC ≥ 102 cm for men and ≥ 88 cm for women;
@@ -122,30 +107,41 @@ class(pest$`Lipid disorder`)
 # 5) FPG level ≥100 mg/dl
 
 score = ifelse(pest$WC_cat=="High", 1, 0)
-score = score + ifelse(pest$TG >=150, 1, 0)
-score = score + ifelse(pest$`HDL-C` <40 & pest$Gender == "Male", 1,
-                       ifelse(pest$`HDL-C` <50 & pest$Gender == "Female", 1,
-                              0))
-score = score + ifelse(pest$SysBP >=130 | pest$DiaBP >=85, 1, 0)
-score = score + ifelse(pest$FPG >=100, 1, 0)
+score = score + ifelse(pest$TG >=150 | pest$Lipid_disorder_medication == "1", 1, 0)
+score = score + ifelse(pest$Lipid_disorder_medication == "1", 1,
+                       ifelse(pest$HDLC <40 & pest$Gender == "Male", 1,
+                              ifelse(pest$HDLC <50 & pest$Gender == "Female", 1, 0)))
+score = score + ifelse(pest$SBP >=130 | pest$DBP >=85  | pest$Hypertension_medication == "1", 1, 0)
+score = score + ifelse(pest$FPG >=100 | pest$Diabetes_medication == "1", 1, 0)
 table(score)
 
-pest$`Metabolic syndrome` = ifelse(score>=3, "Yes", "No")
-table(pest$`Metabolic syndrome`)
-pest$`Metabolic syndrome` = factor(pest$`Metabolic syndrome`)
-class(pest$`Metabolic syndrome`)
+pest$Metabolic_syndrome = ifelse(score>=3, "Yes", "No")
+table(pest$Metabolic_syndrome)
+pest$Metabolic_syndrome = factor(pest$Metabolic_syndrome)
+class(pest$Metabolic_syndrome)
 
 ## Reorder columns
 colnames(pest)
-pest = pest[,c(1:13,47:53,14:46)]
+pest = pest[,c(1:27,61:62,28:60)]
 
-# Remove redundant covariate
-pahs = pahs[,-which(colnames(pahs) %in% c("ldl_hdl","Is the subject fasting?"))]
+### PAHs ----
+## Extract exposure matrices
+data = read_excel("../Data/Dataset_Pesticides_PAHs_05242022.xlsx", sheet = 2)
+str(data)
+colnames(data)[38:50] = readLines("../Dictionaries/PAHs_names.txt")
+pahs = as.data.frame(data)
+rownames(pahs) = pahs$identifiant
+dim(pahs)    # 670   50
+
+# Subset relevant columns
+pahs = pahs[,-which(colnames(pahs) %in% c("Fasting","Alcohol","Education","Physical_activity",
+                                          "LDLC_HDLC","MetS_WC","MetS_TG","MetS_HDLC",
+                                          "MetS_BP","MetS_FPG"))]
 
 str(pahs)
-colnames(pahs)[1:13] = c("ID","Country","Gender","Age",
-                         "WC","BMI","SysBP","DiaBP",
-                         "TC","LDL-C", "HDL-C", "TG", "FPG")
+colnames(pahs)[1] = "ID"
+colnames(pahs)[20:22] = c("Diabetes_medication","Hypertension_medication","Lipid_disorder_medication")
+colnames(pahs)[26:27] = c("Lipid_disorder","Metabolic_syndrome")
 
 # Set classes for variables
 class(pahs$ID)
@@ -159,9 +155,13 @@ pahs$Gender = factor(ifelse(pahs$Gender=="F", "Female", "Male"))
 class(pahs$Gender)
 pahs$Gender = relevel(pahs$Gender, "Male")
 
-pahs[,4:13] = apply(pahs[,4:13], 2, as.numeric)
+table(pahs$Smoking)
+pahs$Smoking = factor(pahs$Smoking, 1:3, labels = c("Never smoker","Former smoker","Current smoker"))
 
 str(pahs)
+
+## Exclude participants with >50% nutrient information missing
+pahs = pahs[rowSums(is.na(pahs[7:11]))/5 < 0.5,]
 
 ## Covariate transformation
 # BMI
@@ -187,37 +187,36 @@ pahs$WC_cat = factor(pahs$WC_cat)
 class(pahs$WC_cat)
 
 ## Outcome ascertainment
-
 # Obesity
-pahs$Obesity = ifelse(pahs$BMI <30, "No","Yes")
+# pahs$Obesity = ifelse(pahs$BMI <30, "No","Yes")
 table(pahs$Obesity)
-pahs$Obesity = factor(pahs$Obesity)
+pahs$Obesity = factor(pahs$Obesity, 0:1, labels = c("No","Yes"))
 class(pahs$Obesity)
 
 # Hypertension
-summary(pahs$SysBP)
-summary(pahs$DiaBP)
-pahs$Hypertension = ifelse(pahs$SysBP < 140 & pahs$DiaBP < 90, "No","Yes")
+summary(pahs$SBP)
+summary(pahs$DBP)
+# pahs$Hypertension = ifelse(pahs$SysBP < 140 & pahs$DiaBP < 90 & pahs$Hypertension_medication == "0", "No","Yes")
 table(pahs$Hypertension)
-pahs$Hypertension = factor(pahs$Hypertension)
+pahs$Hypertension = factor(pahs$Hypertension, 0:1, labels = c("No","Yes"))
 class(pahs$Hypertension)
 
 # Diabetes
 summary(pahs$FPG)
-pahs$Diabetes = ifelse(pahs$FPG < 126, "No","Yes")
+# pahs$Diabetes = ifelse(pahs$FPG < 126 & pahs$Diabetes_medication == "0", "No","Yes")
 table(pahs$Diabetes)
-pahs$Diabetes = factor(pahs$Diabetes)
+pahs$Diabetes = factor(pahs$Diabetes, 0:1, labels = c("No","Yes"))
 class(pahs$Diabetes)
 
 # Lipid disorder
 # TC (total cholesterol) >= 190 mg/dl, TG (triglycerides) >= 150 mg/dl, 
 # LDL-C ≥ 115 mg/dl, and HDLC < 40 mg/dl for men and < 46 mg/dl for women
-pahs$`Lipid disorder`=ifelse(pahs$TC <190 & pahs$TG <150 & pahs$`LDL-C` <115 & pahs$`HDL-C` >=40 & pahs$Gender == "Male", "No",
-                             ifelse(pahs$TC <190 & pahs$TG <150 & pahs$`LDL-C` <115 & pahs$`HDL-C`>=46 & pahs$Gender == "Female", "No",
-                                    "Yes"))
-table(pahs$`Lipid disorder`)
-pahs$`Lipid disorder` = factor(pahs$`Lipid disorder`)
-class(pahs$`Lipid disorder`)
+# pahs$Lipid_disorder = ifelse(pahs$TC <190 & pahs$TG <150 & pahs$LDLC <115 & pahs$HDLC >=40 & pahs$Lipid_disorder_medication == "0" & pahs$Gender == "Male", "No",
+#                              ifelse(pahs$TC <190 & pahs$TG <150 & pahs$LDLC <115 & pahs$HDLC>=46 & pahs$Lipid_disorder_medication == "0" & pahs$Gender == "Female", "No",
+#                                     "Yes"))
+table(pahs$Lipid_disorder)
+pahs$Lipid_disorder = factor(pahs$Lipid_disorder, 0:1, labels = c("No","Yes"))
+class(pahs$Lipid_disorder)
 
 # Metabolic syndrome
 # 1) WC ≥ 102 cm for men and ≥ 88 cm for women;
@@ -227,26 +226,26 @@ class(pahs$`Lipid disorder`)
 # 5) FPG level ≥100 mg/dl
 
 score = ifelse(pahs$WC_cat=="High", 1, 0)
-score = score + ifelse(pahs$TG >=150, 1, 0)
-score = score + ifelse(pahs$`HDL-C` <40 & pahs$Gender == "Male", 1,
-                       ifelse(pahs$`HDL-C` <50 & pahs$Gender == "Female", 1,
-                              0))
-score = score + ifelse(pahs$SysBP >=130 | pahs$DiaBP >=85, 1, 0)
-score = score + ifelse(pahs$FPG >=100, 1, 0)
+score = score + ifelse(pahs$TG >=150 | pahs$Lipid_disorder_medication == "1", 1, 0)
+score = score + ifelse(pahs$Lipid_disorder_medication == "1", 1,
+                       ifelse(pahs$HDLC <40 & pahs$Gender == "Male", 1,
+                              ifelse(pahs$HDLC <50 & pahs$Gender == "Female", 1, 0)))
+score = score + ifelse(pahs$SBP >=130 | pahs$DBP >=85  | pahs$Hypertension_medication == "1", 1, 0)
+score = score + ifelse(pahs$FPG >=100 | pahs$Diabetes_medication == "1", 1, 0)
 table(score)
 
-pahs$`Metabolic syndrome` = ifelse(score>=3, "Yes", "No")
-table(pahs$`Metabolic syndrome`)
-pahs$`Metabolic syndrome` = factor(pahs$`Metabolic syndrome`)
-class(pahs$`Metabolic syndrome`)
+pahs$Metabolic_syndrome = ifelse(score>=3, "Yes", "No")
+table(pahs$Metabolic_syndrome)
+pahs$Metabolic_syndrome = factor(pahs$Metabolic_syndrome)
+class(pahs$Metabolic_syndrome)
 
 ## Reorder columns
 colnames(pahs)
-pahs = pahs[,c(1:13,27:33,14:26)]
+pahs = pahs[,c(1:27,41:42,28:40)]
 
 ## Overlapping participants
 comb = cbind(pest[(intersect(pest$ID, pahs$ID)),],
-             pahs[(intersect(pest$ID, pahs$ID)),21:ncol(pahs)])
+             pahs[(intersect(pest$ID, pahs$ID)),30:ncol(pahs)])
 colnames(comb)
 
 str(comb)

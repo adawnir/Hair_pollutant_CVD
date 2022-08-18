@@ -11,13 +11,13 @@ library(colorspace)
 
 filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
 for (i in 1:3){
-  data = readRDS(paste0("../Processed/",filepaths[i],"_XY.rds"))
+  data = readRDS(paste0("../Data/",filepaths[i],".rds"))
   
   obesity = data$ID[which(data$Obesity == "Yes")]
   hypertension = data$ID[which(data$Hypertension == "Yes")]
   diabetes = data$ID[which(data$Diabetes == "Yes")]
-  ld = data$ID[which(data$`Lipid disorder` == "Yes")]
-  ms = data$ID[which(data$`Metabolic syndrome` == "Yes")]
+  ld = data$ID[which(data$Lipid_disorder == "Yes")]
+  ms = data$ID[which(data$Metabolic_syndrome == "Yes")]
   
   mylist = list(obesity, hypertension, diabetes, ld, ms)
   mycolours = c("orange","lightcoral", "skyblue", "limegreen", "purple")

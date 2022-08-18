@@ -42,12 +42,12 @@ SaveExcelWithSuperscripts=function(dt, filename){
   openxlsx::saveWorkbook(wb, file=filename, overwrite = TRUE)
 }
 
-ContinuousTest3=function(x, y){
+ContinuousTest=function(x, y){
   # By status
   out=NULL
-  for (k in levels(y)){
-    mymean=formatC(mean(10^x[y==k], na.rm=TRUE), format="f", digits=2)
-    mysd=formatC(sd(10^x[y==k], na.rm=TRUE), format="f", digits=2)
+  for (j in levels(y)){
+    mymean=formatC(mean(10^x[y==j], na.rm=TRUE), format="f", digits=2)
+    mysd=formatC(sd(10^x[y==j], na.rm=TRUE), format="f", digits=2)
     out=c(out, paste0(mymean, " (", mysd, ")"))
   }
   
