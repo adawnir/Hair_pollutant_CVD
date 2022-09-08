@@ -14,15 +14,15 @@ library(grid)
 filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 for (i in 1:3){
   data = readRDS(paste0("../Processed/",filepaths[i],"_info_expo_ndimp_naimp_log.rds"))
-  expo = data[31:ncol(data)]
+  expo = data[c(7:11,31:ncol(data))]
   print(ncol(expo))
   
   ### Correlation matrix ----
-  annot_sub = annot[colnames(expo)]
-  mat_col = data.frame(Family = annot_sub)
+  annot_sub = annot[colnames(expo)[6:ncol(expo)]]
+  mat_col = data.frame(Family = c(rep("Diet intake", 5),annot_sub))
   rownames(mat_col) = colnames(expo)
-  mat_colors = list(Family = annot.colours[unique(annot_sub)])
-  names(mat_colors$Family) = unique(annot_sub)
+  mat_colors = list(Family = c("magenta",annot.colours[unique(annot_sub)]))
+  names(mat_colors$Family) = c("Diet intake", unique(annot_sub))
   
   cor = cor(expo, method = "spearman")
   width = height = 0.1*nrow(cor)+3.5
@@ -81,10 +81,13 @@ legend = grid.pretty(range(as.vector(mybreaks)))
 names(legend) = legend
 color = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
 
+annot.colours.plus = c("magenta",annot.colours)
+names(annot.colours.plus) = c("Diet intake",names(annot.colours))
+
 {pdf("../Figures/Spearman_correlation_matrix_legend.pdf", height = 7, width = 4)
   grid.newpage()
   grid.draw(draw_legend(color, mybreaks, legend))
-  for(e in 1:length(annot.colours)) {
+  for(e in 1:length(annot.colours.plus)) {
     grid.rect(
       2,
       e*0.55+2,
@@ -92,12 +95,12 @@ color = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
       0.5,
       default.units = "cm",
       gp=gpar( 
-        fill=rev(annot.colours)[e],
+        fill=rev(annot.colours.plus)[e],
         lwd=0
       )
     )
     grid.text(
-      label = rev(names(annot.colours))[e],
+      label = rev(names(annot.colours.plus))[e],
       x = 2.5,
       y = e*0.55+2,
       default.units = "cm",

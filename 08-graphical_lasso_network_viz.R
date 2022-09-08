@@ -7,24 +7,27 @@ setwd(project_path)
 library(tidyverse)
 library(igraph)
 library(colorspace)
-library(focus) # library(sharp)
+library(sharp)
 library(grid)
 
 source("graph_colours.R")
 
 annot = readRDS("../Data/Compound_family_annotation.rds")
 
-filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
+filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Combined_test")
 for (m in 1:length(filepaths)){
-  A = readRDS(paste0("../Results/",filepaths[m],"_graphical_network_exposures_output.rds"))
-  expo = readRDS(paste0("../Processed/",filepaths[m],"_ndimp_naimp_log.rds"))
+  out = readRDS(paste0("../Results/",filepaths[m],"_graphical_network_exposures_output.rds"))
+  A = readRDS(paste0("../Results/",filepaths[m],"_graphical_network_exposures_adjacency_matrix.rds"))
+  expo = colnames(A)[6:ncol(A)]
   
-  annot_sub = annot[colnames(expo)]
-  mynode_colour = annot.colours[annot_sub]
-  names(mynode_colour) = colnames(expo)
+  
+  annot_sub = annot[expo]
+  mynode_colour = c("magenta","cyan","darkviolet","yellow","lawngreen",
+                    annot.colours[annot_sub])
+  names(mynode_colour) = colnames(A)
   
   # Getting igraph object
-  mygraph=Graph(adjacency=A,node_colour=mynode_colour)
+  mygraph=Graph(adjacency=A,node_colour=mynode_colour, satellites = TRUE)
   
   ## Community detection
   # Louvain
@@ -40,13 +43,15 @@ for (m in 1:length(filepaths)){
   
   # Increase vertex size
   V(mygraph)$size = V(mygraph)$size + 5
+  V(mygraph)$shape = rep(c("square","circle"),c(5,length(expo)))
+  
   
   # Plot clusters in graph
   pdf(paste0("../Figures/Graphical_network_exposures_community_",filepaths[m],".pdf"))
   par(mar=rep(1,4), xpd = TRUE)
   set.seed(1)
   plot(mygraph, layout=layout_with_fr(mygraph),
-       vertex.label.cex = 0.8,
+       vertex.label.cex = 0.7,
        mark.groups = communities(lc),
        mark.col = unique(cluster_colour[order(names(cluster_colour))]),
        mark.border = unique(cluster_colour[order(names(cluster_colour))]))
