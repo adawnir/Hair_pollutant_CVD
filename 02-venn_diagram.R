@@ -9,9 +9,8 @@ library(VennDiagram)
 library(tidyverse)
 library(colorspace)
 
-filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
-for (i in 1:3){
-  data = readRDS(paste0("../Data/",filepaths[i],".rds"))
+{
+  data = readRDS(paste0("../Data/","All_participants_info",".rds"))
   
   obesity = data$ID[which(data$Obesity == "Yes")]
   hypertension = data$ID[which(data$Hypertension == "Yes")]
@@ -23,7 +22,7 @@ for (i in 1:3){
   mycolours = c("orange","lightcoral", "skyblue", "limegreen", "purple")
   mynames = paste0(c("Obesity", "Hypertension", "Diabetes", "Lipid disorder", "Metabolic syndrome"), 
                  " (N=", sapply(mylist, length), ")")
-  venn.diagram(mylist, filename = paste0("../Figures/Venn_diagram_outcome_",filepaths[i],".tiff"),
+  venn.diagram(mylist, filename = paste0("../Figures/Venn_diagram_outcome_","All_participants",".tiff"),
                fill = mycolours, fontfamily ="sans", cat.fontfamily ="sans",
                print.mode=c("raw"), cex = 0.8, cat.cex = 0.8,
                category.names = mynames, imagetype = "tiff", 

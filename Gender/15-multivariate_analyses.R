@@ -21,9 +21,17 @@ for (m in 1:2){
     data = readRDS(paste0("../Processed/",filepaths[m],"_XY_",strata[h],".rds"))
     
     # Extract data
-    X = data[,c(4,21:ncol(data))]
-    X = X %>% mutate_if(is.factor, as.integer)-1
-    Y = data[,c(16:20)]
+    genderfemale = ifelse(data$Gender == "Female", 1, 0)
+    formersmoker = ifelse(data$Smoking == "Former smoker", 1, 0)
+    currentsmoker = ifelse(data$Smoking == "Current smoker", 1, 0)
+    X = cbind(data$Age,
+              genderfemale,
+              formersmoker,
+              currentsmoker,
+              data[,c("NutriScore1","NutriScore2","NutriScore3")],
+              data[,c(28:ncol(data))])
+    
+    Y = data[,c(23:27)]
     Y = Y %>% mutate_all(as.integer)-1
     
     suffix =  sub(" ", "_", colnames(Y))
@@ -49,7 +57,7 @@ for (m in 1:2){
         t1=Sys.time()
         print(t1-t0)
         
-        pdf(paste0("../Figures/Gender/Multivariate_analyses_output_",suffix[k],"_",filepaths[m],"_",strata[h],".pdf"))
+        pdf(paste0("../Figures/Gender/Multivariate_analyses_adjust_output_",suffix[k],"_",filepaths[m],"_",strata[h],".pdf"))
         CalibrationPlot(out)
         dev.off()
         
@@ -63,9 +71,9 @@ for (m in 1:2){
         selprop=SelectionProportions(out)
         
         # Save
-        saveRDS(out, paste0("../Results/Gender/Multivariate_analysis_output_",suffix[k],"_",filepaths[m],"_",strata[h],".rds"))
-        saveRDS(beta_mu, paste0("../Results/Gender/Multivariate_analysis_beta_mu_",suffix[k],"_",filepaths[m],"_",strata[h],".rds"))
-        saveRDS(selprop, paste0("../Results/Gender/Multivariate_analysis_selprop_",suffix[k],"_",filepaths[m],"_",strata[h],".rds"))
+        saveRDS(out, paste0("../Results/Gender/Multivariate_analysis_adjust_output_",suffix[k],"_",filepaths[m],"_",strata[h],".rds"))
+        saveRDS(beta_mu, paste0("../Results/Gender/Multivariate_analysis_adjust_beta_mu_",suffix[k],"_",filepaths[m],"_",strata[h],".rds"))
+        saveRDS(selprop, paste0("../Results/Gender/Multivariate_analysis_adjust_selprop_",suffix[k],"_",filepaths[m],"_",strata[h],".rds"))
       }
     }
   }
