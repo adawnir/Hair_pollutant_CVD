@@ -15,21 +15,21 @@ strata = c("Female","Male")
 for (i in 1:2){
   for (h in 1:2){
     data = readRDS(paste0("../Processed/",filepaths[i],"_XY.rds"))
-    Y = data[,c(16:20)]
+    Y = data[,c(23:27)]
     suffix =  gsub(" ", "_", colnames(Y))
     param = NULL
     for (k in c(1,2,4,5)){
-      out = readRDS(paste0("../Results/Gender/Multivariate_analysis_output_",suffix[k],"_",filepaths[i],"_",strata[h],".rds"))
+      out = readRDS(paste0("../Results/Gender/Multivariate_analysis_adjust_output_",suffix[k],"_",filepaths[i],"_",strata[h],".rds"))
       tmp = Argmax(out)
       param = rbind(param, tmp)
     }
     rownames(param) = colnames(Y)[c(1,2,4,5)]
-    saveRDS(param, paste0("../Results/Gender/Multivariate_analysis_param_",filepaths[i],"_",strata[h],".rds")) 
+    saveRDS(param, paste0("../Results/Gender/Multivariate_analysis_adjust_param_",filepaths[i],"_",strata[h],".rds")) 
   }
 }
 
 ## Inspect direction of betas of stably selected variables ----
-myfiles = list.files(path = "../Results/Gender/", pattern = "Multivariate_analysis_output_*")
+myfiles = list.files(path = "../Results/Gender/", pattern = "Multivariate_analysis_adjust_output_*")
 for (i in 1:length(myfiles)){
   # Load data
   out = readRDS(paste0("../Results/Gender/",myfiles[i]))
@@ -48,11 +48,11 @@ for (i in 1:length(myfiles)){
 }
 
 ## Recalibration and Predictive performance----
-myfiles = list.files(path = "../Results/Gender/", pattern = "Multivariate_analysis_output_*")
+myfiles = list.files(path = "../Results/Gender/", pattern = "Multivariate_analysis_adjust_output_*")
 for (i in 1:length(myfiles)){
   # Load data
   split = strsplit(myfiles[i], "_(?!.*_)", perl=TRUE)[[1]]
-  splitb = gsub("Multivariate_analysis_output_","",split[1]) %>% strsplit(., "_(?!.*_)", perl=TRUE) %>% .[[1]]
+  splitb = gsub("Multivariate_analysis_adjust_output_","",split[1]) %>% strsplit(., "_(?!.*_)", perl=TRUE) %>% .[[1]]
   strata_type = gsub(".rds","",split[2])
   data_type = splitb[2]
   outcome_type = splitb[1] 
@@ -61,9 +61,18 @@ for (i in 1:length(myfiles)){
   out = readRDS(paste0("../Results/Gender/",myfiles[i]))
   
   # Extract data
-  X = data[,c(4,21:ncol(data))]
-  X = X %>% mutate_if(is.factor, as.integer)-1
-  Y = as.integer(data[,gsub("_"," ",outcome_type)])-1
+  genderfemale = ifelse(data$Gender == "Female", 1, 0)
+  formersmoker = ifelse(data$Smoking == "Former smoker", 1, 0)
+  currentsmoker = ifelse(data$Smoking == "Current smoker", 1, 0)
+  X = cbind(data$Age,
+            genderfemale,
+            formersmoker,
+            currentsmoker,
+            data[,c("NutriScore1","NutriScore2","NutriScore3")],
+            data[,c(28:ncol(data))])
+  
+  Y = data[,c(23:27)]
+  Y = Y %>% mutate_all(as.integer)-1
 
   ## Split training and test
   set.seed(100)

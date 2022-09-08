@@ -13,11 +13,11 @@ for (i in 1:2){
   dataf = readRDS(paste0("../Processed/",filepaths[i],"_XY_",strata[1],".rds"))
   datam = readRDS(paste0("../Processed/",filepaths[i],"_XY_",strata[2],".rds"))
   
-  pvalsf = readRDS(paste0("../Results/Gender/",filepaths[i],"_univariate_age_pvals_",strata[1],".rds"))
-  betasf = readRDS(paste0("../Results/Gender/",filepaths[i],"_univariate_age_betas_",strata[1],".rds"))
+  pvalsf = readRDS(paste0("../Results/Gender/",filepaths[i],"_univariate_adjust_pvals_",strata[1],".rds"))
+  betasf = readRDS(paste0("../Results/Gender/",filepaths[i],"_univariate_adjust_betas_",strata[1],".rds"))
   
-  pvalsm = readRDS(paste0("../Results/Gender/",filepaths[i],"_univariate_age_pvals_",strata[2],".rds"))
-  betasm = readRDS(paste0("../Results/Gender/",filepaths[i],"_univariate_age_betas_",strata[2],".rds"))
+  pvalsm = readRDS(paste0("../Results/Gender/",filepaths[i],"_univariate_adjust_pvals_",strata[2],".rds"))
+  betasm = readRDS(paste0("../Results/Gender/",filepaths[i],"_univariate_adjust_betas_",strata[2],".rds"))
   
   suffix =  sub(" ", "_", rownames(pvalsf))
   bonf = 0.05/ncol(betasf)
@@ -31,7 +31,7 @@ for (i in 1:2){
     width_extra = ceiling((sumf+summ)/25)*2
     
     ifelse(dir.exists("../Figures/Gender"),"",dir.create("../Figures/Gender"))
-    pdf(paste0("../Figures/Gender/Univariate_age_",suffix[k],"_",filepaths[i],".pdf"), width = 5+width_extra, height = 5.5)
+    pdf(paste0("../Figures/Gender/Univariate_adjust_",suffix[k],"_",filepaths[i],".pdf"), width = 5+width_extra, height = 5.5)
     par(mar=c(5,5,3,unit*legcol))
     plot(betasf[k,], -log10(pvalsf[k,]), pch=19,
          col=ifelse(pvalsf[k,] < bonf, "hotpink", "grey"),
