@@ -14,12 +14,18 @@ source("graph_colours.R")
 
 annot = readRDS("../Data/Compound_family_annotation.rds")
 
-filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Combined_test")
+filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 for (m in 1:length(filepaths)){
   out = readRDS(paste0("../Results/",filepaths[m],"_graphical_network_exposures_output.rds"))
+  
+  ifelse(dir.exists("../Figures/"),"",dir.create("../Figures/"))
+  pdf(paste0("../Figures/Graphical_network_exposures_output_",filepaths[m],".pdf"), width = 15)
+  par(mar = c(7,5,7,6), mfrow = c(1, 3))
+  CalibrationPlot(out)
+  dev.off()
+  
   A = readRDS(paste0("../Results/",filepaths[m],"_graphical_network_exposures_adjacency_matrix.rds"))
   expo = colnames(A)[6:ncol(A)]
-  
   
   annot_sub = annot[expo]
   mynode_colour = c("magenta","cyan","darkviolet","yellow","lawngreen",
