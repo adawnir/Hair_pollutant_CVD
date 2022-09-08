@@ -54,30 +54,58 @@ for (i in 1:2){
   SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/",filepaths[i],"_exposure_summary.xlsx"))
 }
 
-# ## Comparing exposures between populations ----
-# filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
-# annot = readRDS("../Data/Compound_family_annotation.rds")
-# 
-# for (i in 1:3){
-#   data = readRDS(paste0("../Data/",filepaths[i],".rds"))
-#   expo = readRDS(paste0("../Processed/",filepaths[i],"_ndimp_naimp_log.rds"))
-#   
-#   annot_sub = annot[colnames(expo)]
-#   
-#   mytable=NULL
-#   for (k in 1:length(colnames(expo))){
-#     print(colnames(expo)[k])
-#     tmp=ContinuousTest(x=expo[,k], y=data$Country)
-#     if(!duplicated(annot_sub)[k]){
-#       mytable=rbind(mytable, rep(NA,length(tmp)))
-#       rownames(mytable)[nrow(mytable)]=as.character(annot_sub[k])
-#     }
-#     mytable=rbind(mytable, tmp)
-#     rownames(mytable)[nrow(mytable)]=colnames(expo)[k]
-#   }
-#   colnames(mytable)=c(paste0(levels(data$Country),", Mean (sd)"),"P-value")
-#   # mytable=ReformatScientificNotation(mytable)
-#   SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/",filepaths[i],"_exposure_comparison.xlsx"))
-# }
-# 
-# 
+## Comparing exposures between populations (Pesticides and POPs) ----
+annot = readRDS("../Data/Compound_family_annotation.rds")
+
+{
+  data1 = readRDS(paste0("../Processed/","PesticidesPCBBDEs_train_info_expo_ndimp_naimp_log",".rds"))
+  data2 = readRDS(paste0("../Processed/","Overlap_test_info_expo_ndimp_naimp_log",".rds"))
+  expo = rbind(data1[,31:ncol(data1)],data2[,31:63])
+  data_type = factor(c(data1$data_type,data2$data_type), labels = c("Train","Test"))
+
+  annot_sub = annot[colnames(expo)]
+
+  mytable=NULL
+  for (k in 1:length(colnames(expo))){
+    print(colnames(expo)[k])
+    tmp=ContinuousTest(x=expo[,k], y=data_type)
+    if(!duplicated(annot_sub)[k]){
+      mytable=rbind(mytable, rep(NA,length(tmp)))
+      rownames(mytable)[nrow(mytable)]=as.character(annot_sub[k])
+    }
+    mytable=rbind(mytable, tmp)
+    rownames(mytable)[nrow(mytable)]=colnames(expo)[k]
+  }
+  colnames(mytable)=c(paste0(levels(data_type),", Mean (sd)"),"P-value")
+  # mytable=ReformatScientificNotation(mytable)
+  SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/PesticidesPCBBDEs_compare_mean_exposure_by_data_type.xlsx"))
+}
+
+## Comparing exposures between populations (Tobacco-related and PAHs) ----
+annot = readRDS("../Data/Compound_family_annotation.rds")
+
+{
+  data1 = readRDS(paste0("../Processed/","PAHs_train_info_expo_ndimp_naimp_log",".rds"))
+  data2 = readRDS(paste0("../Processed/","Overlap_test_info_expo_ndimp_naimp_log",".rds"))
+  expo = rbind(data1[,31:ncol(data1)],data2[,64:ncol(data2)])
+  data_type = factor(c(data1$data_type,data2$data_type), labels = c("Train","Test"))
+  
+  annot_sub = annot[colnames(expo)]
+  
+  mytable=NULL
+  for (k in 1:length(colnames(expo))){
+    print(colnames(expo)[k])
+    tmp=ContinuousTest(x=expo[,k], y=data_type)
+    if(!duplicated(annot_sub)[k]){
+      mytable=rbind(mytable, rep(NA,length(tmp)))
+      rownames(mytable)[nrow(mytable)]=as.character(annot_sub[k])
+    }
+    mytable=rbind(mytable, tmp)
+    rownames(mytable)[nrow(mytable)]=colnames(expo)[k]
+  }
+  colnames(mytable)=c(paste0(levels(data_type),", Mean (sd)"),"P-value")
+  # mytable=ReformatScientificNotation(mytable)
+  SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/PAHs_compare_mean_exposure_by_data_type.xlsx"))
+}
+
+
