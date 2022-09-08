@@ -7,6 +7,8 @@ names(outcome.colours) = c("Obesity", "Hypertension", "Diabetes", "Lipid disorde
 # Outcome
 country.colours = c("royalblue","tomato")
 names(country.colours) = c("Belgium","Luxembourg")
+gender.colours = c("royalblue","tomato")
+names(gender.colours) = c("Male","Female")
 
 # Chemical family
 annot = readRDS("../Data/Compound_family_annotation.rds")
