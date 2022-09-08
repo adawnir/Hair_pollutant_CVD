@@ -11,9 +11,10 @@ library(RColorBrewer)
 library(grid)
 
 ## Correlation matrix ----
-filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
+filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 for (i in 1:3){
-  expo = readRDS(paste0("../Processed/",filepaths[i],"_ndimp_naimp_log.rds"))
+  data = readRDS(paste0("../Processed/",filepaths[i],"_info_expo_ndimp_naimp_log.rds"))
+  expo = data[31:ncol(data)]
   print(ncol(expo))
   
   ### Correlation matrix ----
@@ -38,9 +39,10 @@ for (i in 1:3){
   }
 }
 
-filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
+filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 for (i in 1:3){
-  expo = readRDS(paste0("../Processed/",filepaths[i],"_ndimp_naimp_log.rds"))
+  data = readRDS(paste0("../Processed/",filepaths[i],"_info_expo_ndimp_naimp_log.rds"))
+  expo = data[,31:ncol(data)]
   print(ncol(expo))
   tmp = cor(expo, method = "spearman")
   tmp[lower.tri(tmp, diag = T)] = NA

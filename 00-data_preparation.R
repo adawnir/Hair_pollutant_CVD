@@ -67,6 +67,11 @@ table(pest$WC_cat)
 pest$WC_cat = factor(pest$WC_cat)
 class(pest$WC_cat)
 
+### Medication
+pest$Diabetes_medication = factor(pest$Diabetes_medication)
+pest$Hypertension_medication = factor(pest$Hypertension_medication)
+pest$Lipid_disorder_medication = factor(pest$Lipid_disorder_medication)
+
 ## Outcome ascertainment
 # Obesity
 # pest$Obesity = ifelse(pest$BMI <30, "No","Yes")
@@ -123,6 +128,10 @@ class(pest$Metabolic_syndrome)
 ## Reorder columns
 colnames(pest)
 pest = pest[,c(1:27,61:62,28:60)]
+
+ifelse(dir.exists("../Exports/"), "", dir.create("../Exports/"))
+saveRDS(pest, "../Data/PesticidesPCBBDEs.rds")
+write.csv(pest, "../Exports/PesticidesPCBBDEs.csv")
 
 ### PAHs ----
 ## Extract exposure matrices
@@ -186,6 +195,11 @@ table(pahs$WC_cat)
 pahs$WC_cat = factor(pahs$WC_cat)
 class(pahs$WC_cat)
 
+# Medication
+pahs$Diabetes_medication = factor(pahs$Diabetes_medication)
+pahs$Hypertension_medication = factor(pahs$Hypertension_medication)
+pahs$Lipid_disorder_medication = factor(pahs$Lipid_disorder_medication)
+
 ## Outcome ascertainment
 # Obesity
 # pahs$Obesity = ifelse(pahs$BMI <30, "No","Yes")
@@ -243,22 +257,46 @@ class(pahs$Metabolic_syndrome)
 colnames(pahs)
 pahs = pahs[,c(1:27,41:42,28:40)]
 
-## Overlapping participants
-comb = cbind(pest[(intersect(pest$ID, pahs$ID)),],
-             pahs[(intersect(pest$ID, pahs$ID)),30:ncol(pahs)])
-colnames(comb)
-
-str(comb)
-
-comb = comb %>% mutate_if(is.factor,droplevels)
-
-ifelse(dir.exists("../Exports/"), "", dir.create("../Exports/"))
-saveRDS(pest, "../Data/PesticidesPCBBDEs.rds")
-write.csv(pest, "../Exports/PesticidesPCBBDEs.csv")
 saveRDS(pahs, "../Data/PAHs.rds")
 write.csv(pahs, "../Exports/PAHs.csv")
-saveRDS(comb, "../Data/Combined.rds")
-write.csv(comb, "../Exports/Combined.csv")
+
+### Train/Test split----
+
+# Unique participants for training
+train_pest = pest[setdiff(pest$ID, pahs$ID),]
+train_pahs = pahs[setdiff(pahs$ID, pest$ID),]
+
+# Check if covariate information is consistent
+all.equal(pest[(intersect(pest$ID, pahs$ID)),1:29],pahs[(intersect(pest$ID, pahs$ID)),1:29])
+
+# Overlapping participants for validation
+test = cbind(pest[(intersect(pest$ID, pahs$ID)),],
+             pahs[(intersect(pest$ID, pahs$ID)),30:ncol(pahs)])
+colnames(test)
+str(test)
+
+# drop levels
+train_pest = train_pest %>% mutate_if(is.factor,droplevels)
+train_pahs = train_pahs %>% mutate_if(is.factor,droplevels)
+test = test %>% mutate_if(is.factor,droplevels)
+
+### Combine all participants (covariate and outcome information)----
+outer = rbind(train_pest[,1:29],
+              train_pahs[,1:29],
+              test[,1:29])
+colnames(outer)
+str(outer)
+
+outer$data_type = rep(c("train_pest","train_pahs","test"),
+                      c(nrow(train_pest),nrow(train_pahs), nrow(test)))
+outer$data_type = factor(outer$data_type, levels = c("train_pest","train_pahs","test"))
+
+table(outer$data_type)
+table(outer$Country,outer$data_type)
+summary(outer)
+
+saveRDS(outer, "../Data/All_participants_info.rds")
+write.csv(outer, "../Exports/All_participants_info.csv")
 
 
 

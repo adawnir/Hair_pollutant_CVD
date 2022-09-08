@@ -3,8 +3,9 @@
 Below is the recommended workflow for this project:  
 ## Data preparation and processing
 1. 00-data_preparation.R: Cleaning data and outcome ascertainment
-2. 01-data_processing.R: Missing/detection rate, nd imputation, log transformation and NA imputation
-
+2. 01-data_preprocessing.R: Missing/detection rate, nd imputation, NA imputation
+ and log transformation
+ 
 ## Descriptive analysis
 1. 02-expo_distribution.R: Distribution of exposure stratified by country
 2. 02-naimp_diagnostics.R: Distribution of exposure comparing observed and imputed values

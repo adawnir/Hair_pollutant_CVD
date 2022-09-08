@@ -23,11 +23,12 @@ m=as.numeric(args[1])
 # Load data sets
 annot = readRDS("../Data/Compound_family_annotation.rds")
 
-filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
+filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 # Load data
-expo = readRDS(paste0("../Processed/",filepaths[m],"_ndimp_naimp_log.rds"))
+data = readRDS(paste0("../Processed/",filepaths[m],"_info_expo_ndimp_naimp_log.rds"))
 
 # Standardisaiton
+expo = data[,c(7:11,31:ncol(data))]
 expo = scale(expo)
 
 # Running stability selection

@@ -8,16 +8,15 @@ setwd("../")
 library(tidyverse)
 
 filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
-strata = c("Belgium","Luxembourg","France")
+strata = c("Female","Male")
 for (i in 1:2){
-  n = ifelse(i==2,2,3)
-  for (h in 1:n){
+  for (h in 1:2){
     # Load data
     data = readRDS(paste0("../Processed/",filepaths[i],"_XY_",strata[h],".rds"))
     
     # Extract data
-    expo = data[c(21:ncol(data))]
-    Y = data[,c(16:20)]
+    expo = data[c(28:ncol(data))]
+    Y = data[,c(23:27)]
     str(Y)
     
     Y = Y %>% mutate_all(as.integer)-1
@@ -28,8 +27,8 @@ for (i in 1:2){
     
     # Logistic regression
     ncol(Y) * ncol(expo) # number of tests
-    betas0 = pvals0 = betas1 = pvals1 = NULL
-    f0='Y[,k] ~ expo[,j] + data$Age + data$Gender'
+    betas0 = pvals0 = NULL
+    f0='Y[,k] ~ expo[,j] + data$Age + data$Smoking + data$NutriScore1 + data$NutriScore2 + data$NutriScore3'
     t0=Sys.time()
     for (j in 1:ncol(expo)){
       for (k in 1:ncol(Y)){
@@ -45,8 +44,8 @@ for (i in 1:2){
     rownames(pvals0) = rownames(betas0) = colnames(Y)
     colnames(pvals0) = colnames(betas0) = colnames(expo)
 
-    ifelse(dir.exists("../Results/Country"),"",dir.create("../Results/Country"))
-    saveRDS(pvals0, paste0("../Results/Country/",filepaths[i],"_univariate_age_gender_pvals_",strata[h],".rds"))
-    saveRDS(betas0, paste0("../Results/Country/",filepaths[i],"_univariate_age_gender_betas_",strata[h],".rds"))
+    ifelse(dir.exists("../Results/Gender"),"",dir.create("../Results/Gender"))
+    saveRDS(pvals0, paste0("../Results/Gender/",filepaths[i],"_univariate_adjust_pvals_",strata[h],".rds"))
+    saveRDS(betas0, paste0("../Results/Gender/",filepaths[i],"_univariate_adjust_betas_",strata[h],".rds"))
   }
 }

@@ -1,4 +1,4 @@
-### Pre-processing: Imputing non-detects and missing values
+### Pre-processing: Overview of missing valyes and non-detects, Recoding non-detects, Splitting data, imputing missing values
 
 rm(list=ls())
 project_path=dirname(rstudioapi::getActiveDocumentContext()$path)
@@ -11,7 +11,6 @@ library(missForest)
 ## Load data ----
 pest = readRDS("../Data/PesticidesPCBBDEs.rds")
 pahs = readRDS("../Data/PAHs.rds")
-comb = readRDS("../Data/Combined.rds")
 
 # Subset exposures
 colnames(pest)
@@ -89,7 +88,7 @@ for (i in 1:length(pahs_prop)){
 }
 dev.off()
 
-## Proportion of NAs per participant ----
+## Proportion detected per participant ----
 summary(1-(apply(pest_expo, 1, function(x) sum(x=="nd", na.rm = TRUE)/ncol(pest_expo))+
              apply(pest_expo, 1, function(x) sum(is.na(x))/ncol(pest_expo))))
 summary(1-(apply(pahs_expo, 1, function(x) sum(x=="nd", na.rm = TRUE)/ncol(pahs_expo))+
@@ -125,88 +124,76 @@ rownames(pahs_expo) = rownames(pahs)
 summary(pest_expo)
 summary(pahs_expo)
 
-## Overlapping participants
-comb_expo = cbind(pest_expo[comb$ID,],pahs_expo[comb$ID,])
-colnames(comb_expo)
-dim(comb_expo)
-
 saveRDS(pest_expo, "../Processed/PesticidesPCBBDEs_ndimp.rds")
 write.csv(pest_expo, paste0("../Exports/PesticidesPCBBDEs_ndimp.csv"))
 saveRDS(pahs_expo, "../Processed/PAHs_ndimp.rds")
 write.csv(pahs_expo, paste0("../Exports/PAHs_ndimp.csv"))
-saveRDS(comb_expo, "../Processed/Combined_ndimp.rds")
-write.csv(comb_expo, paste0("../Exports/Combined_ndimp.csv"))
 
+## Splitting data sets ----
+outer = readRDS("../Data/All_participants_info.rds")
+train_id = outer$ID[outer$data_type=="train_pest"]
+train_pest = cbind(outer[train_id,],
+                   pest_expo[train_id,])
+dim(train_pest)
 
-## Imputation of missing data----
-# set.seed(7)
-# pest_expo_imp = impute.QRILC(t(pest_expo_log))
-# pest_expo_imp = data.frame(t(pest_expo_imp[[1]]))
-# colnames(pest_expo_imp) = colnames(pest_expo)
-# str(pest_expo_imp)
-# summary(pest_expo_imp)
-# 
-# set.seed(7)
-# pahs_expo_imp = impute.QRILC(t(pahs_expo_log))
-# pahs_expo_imp = data.frame(t(pahs_expo_imp[[1]]))
-# colnames(pahs_expo_imp) = colnames(pahs_expo)
-# summary(pahs_expo_imp)
-
-set.seed(202204)
-imp = missForest(pest_expo)
-imp$OOBerror
-pest_expo_imp = imp$ximp
-colnames(pest_expo_imp) = colnames(pest_expo)
-rownames(pest_expo_imp) = rownames(pest_expo)
-
-set.seed(202204)
-imp = missForest(pahs_expo)
-imp$OOBerror
-pahs_expo_imp = imp$ximp
-colnames(pahs_expo_imp) = colnames(pahs_expo)
-rownames(pahs_expo_imp) = rownames(pahs_expo)
+train_id = outer$ID[outer$data_type=="train_pahs"]
+train_pahs = cbind(outer[train_id,],
+                   pahs_expo[train_id,])
+dim(train_pahs)
 
 ## Overlapping participants
-comb_expo_imp = cbind(pest_expo_imp[comb$ID,],pahs_expo_imp[comb$ID,])
-colnames(comb_expo_imp)
-dim(comb_expo_imp)
+test_id = outer$ID[outer$data_type=="test"]
+test = cbind(outer[test_id,],pest_expo[test_id,],pahs_expo[test_id,])
+dim(test)
 
-saveRDS(pest_expo_imp, "../Processed/PesticidesPCBBDEs_ndimp_naimp.rds")
-write.csv(pest_expo_imp, paste0("../Exports/PesticidesPCBBDEs_ndimp_naimp.csv"))
-saveRDS(pahs_expo_imp, "../Processed/PAHs_ndimp_naimp.rds")
-write.csv(pahs_expo_imp, paste0("../Exports/PAHs_ndimp_naimp.csv"))
-saveRDS(comb_expo_imp, "../Processed/Combined_ndimp_naimp.rds")
-write.csv(comb_expo_imp, paste0("../Exports/Combined_ndimp_naimp.csv"))
+saveRDS(train_pest, "../Processed/PesticidesPCBBDEs_train_info_expo_ndimp.rds")
+saveRDS(train_pahs, "../Processed/PAHs_train_info_expo_ndimp.rds")
+saveRDS(test, "../Processed/Overlap_test_info_expo_ndimp.rds")
 
-## Imputation of missing data (nutrient intake information)----
-# Combine all participants
-outer = rbind(pest[setdiff(pest$ID, pahs$ID),7:11],
-              pahs[setdiff(pahs$ID, pest$ID),7:11],
-              comb[,7:11])
-colnames(outer)
+## Imputing missing values ----
+
+## Exposures
+set.seed(202204)
+imp = missForest(train_pest[,31:ncol(train_pest)])
+imp$OOBerror
+train_pest[,31:ncol(train_pest)] = imp$ximp
 
 set.seed(202204)
-imp = missForest(outer)
+imp = missForest(train_pahs[,31:ncol(train_pahs)])
 imp$OOBerror
-outer_imp = imp$ximp
-colnames(outer_imp) = colnames(outer)
-rownames(outer_imp) = rownames(outer)
+train_pahs[,31:ncol(train_pahs)] = imp$ximp
 
-saveRDS(outer_imp, "../Processed/All_participants_nutri_naimp.rds")
-write.csv(outer_imp, paste0("../Exports/All_participants_nutri_naimp.csv"))
+set.seed(202204)
+imp = missForest(test[,31:ncol(test)])
+imp$OOBerror
+test[,31:ncol(test)] = imp$ximp
+
+## Diet information
+set.seed(202204)
+imp = missForest(train_pest[,2:30])
+imp$OOBerror
+train_pest[,2:30] = imp$ximp
+
+set.seed(202204)
+imp = missForest(train_pahs[,2:30])
+imp$OOBerror
+train_pahs[,2:30] = imp$ximp
+
+set.seed(202204)
+imp = missForest(test[,2:30])
+imp$OOBerror
+test[,2:30] = imp$ximp
+
+saveRDS(train_pest, "../Processed/PesticidesPCBBDEs_train_info_expo_ndimp_naimp.rds")
+saveRDS(train_pahs, "../Processed/PAHs_train_info_expo_ndimp_naimp.rds")
+saveRDS(test, "../Processed/Overlap_test_info_expo_ndimp_naimp.rds")
 
 ## Log10 transformation ----
-pest_expo_imp_log = log10(pest_expo_imp)
-pahs_expo_imp_log = log10(pahs_expo_imp)
+train_pest[,31:ncol(train_pest)] = log10(train_pest[,31:ncol(train_pest)])
+train_pahs[,31:ncol(train_pahs)] = log10(train_pahs[,31:ncol(train_pahs)])
+test[,31:ncol(test)] = log10(test[,31:ncol(test)])
 
-## Overlapping participants
-comb_expo_imp_log = cbind(pest_expo_imp_log[comb$ID,],pahs_expo_imp_log[comb$ID,])
-colnames(comb_expo_imp_log)
-dim(comb_expo_imp_log)
+saveRDS(train_pest, "../Processed/PesticidesPCBBDEs_train_info_expo_ndimp_naimp_log.rds")
+saveRDS(train_pahs, "../Processed/PAHs_train_info_expo_ndimp_naimp_log.rds")
+saveRDS(test, "../Processed/Overlap_test_info_expo_ndimp_naimp_log.rds")
 
-saveRDS(pest_expo_imp_log, "../Processed/PesticidesPCBBDEs_ndimp_naimp_log.rds")
-write.csv(pest_expo_imp_log, paste0("../Exports/PesticidesPCBBDEs_ndimp_naimp_log.csv"))
-saveRDS(pahs_expo_imp_log, "../Processed/PAHs_ndimp_naimp_log.rds")
-write.csv(pahs_expo_imp_log, paste0("../Exports/PAHs_ndimp_naimp_log.csv"))
-saveRDS(comb_expo_imp_log, "../Processed/Combined_ndimp_naimp_log.rds")
-write.csv(comb_expo_imp_log, paste0("../Exports/Combined_ndimp_naimp_log.csv"))

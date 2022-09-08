@@ -1,16 +1,35 @@
 ### Data processing: Composite score and reconstructing data sets
 
+rm(list=ls())
+project_path=dirname(rstudioapi::getActiveDocumentContext()$path)
+setwd(project_path)
+
+# Load packages
+library(tidyverse)
+library(RColorBrewer)
+library(FactoMineR)
+source("functions.R")
+source("graph_colours.R")
+
 ## Load data ----
 pest = readRDS("../Data/PesticidesPCBBDEs.rds")
 pahs = readRDS("../Data/PAHs.rds")
 comb = readRDS("../Data/Combined.rds")
 
+filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
+prefix = c("pest","pahs","comb")
+for (i in 1:3){
+  expo = readRDS(paste0("../Processed/",filepaths[i],"_ndimp_naimp_log.rds"))
+  assign(paste0(prefix[i],"_expo"), expo)
+}
+
 ## Nutrient information ----
 nutri = readRDS("../Processed/All_participants_nutri_naimp.rds")
 mypca = PCA(nutri, graph = FALSE)
-saveRDS(mypca, paste0("../Results/",filepaths[i],"_nutri_pca.rds"))
-loadings = mypca$ind$coord
-colnames(loadings) = paste0("NutriScore",1:ncol(loadings))
+saveRDS(mypca, paste0("../Results/All_participants_nutri_pca.rds"))
+scores = mypca$ind$coord
+colnames(scores) = paste0("NutriScore",1:ncol(scores))
+loadings = mypca$var$coord
 ev=mypca$eig[,2]/100
 
 # Scree plot
@@ -24,9 +43,9 @@ legend("right", pch=19, col=c("navy", "red"),
 dev.off()
 
 ## Reconstruct dataset ----
-pest_XY = cbind(pest[,c(1:4,6:11)], loadings[pest$ID,1:2],pest[,c(5,12:19,23:27,30:ncol(pest))])
-pahs_XY = cbind(pahs[,c(1:4,6:11)], loadings[pahs$ID,1:2],pahs[,c(5,12:19,23:27,30:ncol(pahs))])
-comb_XY = cbind(comb[,c(1:4,6:11)], loadings[comb$ID,1:2],comb[,c(5,12:19,23:27,30:ncol(comb))])
+pest_XY = cbind(pest[,c(1:4,6:11)], scores[pest$ID,1:3],pest[,c(5,12:19,23:27)],pest_expo)
+pahs_XY = cbind(pahs[,c(1:4,6:11)], scores[pahs$ID,1:3],pahs[,c(5,12:19,23:27)],pahs_expo)
+comb_XY = cbind(comb[,c(1:4,6:11)], scores[comb$ID,1:3],comb[,c(5,12:19,23:27)],comb_expo)
 
 saveRDS(pest_XY, "../Processed/PesticidesPCBBDEs_XY.rds")
 write.csv(pest_XY, paste0("../Exports/PesticidesPCBBDEs_XY.csv"))
