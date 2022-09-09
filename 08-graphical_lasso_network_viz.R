@@ -24,7 +24,11 @@ for (m in 1:length(filepaths)){
   CalibrationPlot(out)
   dev.off()
   
-  A = readRDS(paste0("../Results/",filepaths[m],"_graphical_network_exposures_adjacency_matrix.rds"))
+  
+  # Adjacency matrix of the calibrated network
+  A=Adjacency(out)
+  saveRDS(A, paste0("../Results/",filepaths[m],"_graphical_network_exposures_adjacency_matrix.rds"))
+
   expo = colnames(A)[6:ncol(A)]
   
   annot_sub = annot[expo]

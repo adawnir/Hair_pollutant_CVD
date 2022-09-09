@@ -6,14 +6,14 @@ setwd(project_path)
 
 library(tidyverse)
 
-filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
+filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 for (i in 1:3){
   # Load data
   data = readRDS(paste0("../Processed/",filepaths[i],"_XY.rds"))
   
   # Extract data
-  expo = data[c(28:ncol(data))]
-  Y = data[,c(23:27)]
+  expo = data[c(14:ncol(data))]
+  Y = data[,c(9:13)]
   str(Y)
   
   Y = Y %>% mutate_all(as.integer)-1
@@ -26,8 +26,8 @@ for (i in 1:3){
   ncol(Y) * ncol(expo) # number of tests
   betas0 = pvals0 = betas1 = pvals1 = betas2 = pvals2 = NULL
   f0='Y[,k] ~ expo[,j] + data$Age + data$Gender'
-  f1='Y[,k] ~ expo[,j] + data$Age + data$Gender + data$Smoking + data$NutriScore1 + data$NutriScore2 + data$NutriScore3'
-  f2='Y[,k] ~ expo[,j] + data$Age + data$Gender + data$Smoking + data$NutriScore1 + data$NutriScore2  + data$NutriScore3+ data$Country'
+  f1='Y[,k] ~ expo[,j] + data$Age + data$Gender + data$Smoking + data$DietScore1 + data$DietScore2 + data$DietScore3'
+  f2='Y[,k] ~ expo[,j] + data$Age + data$Gender + data$Smoking + data$DietScore1 + data$DietScore2  + data$DietScore3+ data$Country'
   t0=Sys.time()
   for (j in 1:ncol(expo)){
     for (k in 1:ncol(Y)){

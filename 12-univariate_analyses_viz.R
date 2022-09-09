@@ -10,7 +10,7 @@ library(colorspace)
 ## Main analysis: Base model ----
 annot = readRDS("../Data/Compound_family_annotation.rds")
 
-filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
+filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 for (i in 1:2){
   pvals = readRDS(paste0("../Results/",filepaths[i],"_univariate_base_pvals.rds"))
   betas = readRDS(paste0("../Results/",filepaths[i],"_univariate_base_betas.rds"))
@@ -64,7 +64,7 @@ for (i in 1:2){
 ## Main analysis: Adjusted model ----
 annot = readRDS("../Data/Compound_family_annotation.rds")
 
-filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
+filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 for (i in 1:2){
   pvals0 = readRDS(paste0("../Results/",filepaths[i],"_univariate_base_pvals.rds"))
   betas0 = readRDS(paste0("../Results/",filepaths[i],"_univariate_base_betas.rds"))
@@ -79,8 +79,8 @@ for (i in 1:2){
     diff = rbind(diff, tmp)
   }
   rownames(diff) = rownames(pvals0)
-  saveRDS(diff, "../Results/Univariate_adjust_inconsistent_beta.rds")
-  write.csv(diff, "../Exports/Univariate_adjust_inconsistent_beta.csv")
+  saveRDS(diff, paste0("../Results/",filepaths[i],"_univariate_adjust_inconsistent_beta.rds"))
+  write.csv(diff, paste0("../Export/",filepaths[i],"_univariate_adjust_inconsistent_beta.csv"))
   
   suffix =  sub(" ", "_", rownames(pvals0))
   bonf = 0.05/ncol(pvals0)
@@ -136,7 +136,7 @@ for (i in 1:2){
 ## Sensitivity analysis: same sample size for all exposures ----
 annot = readRDS("../Data/Compound_family_annotation.rds")
 
-filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
+filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 pvals = readRDS(paste0("../Results/",filepaths[3],"_univariate_base_pvals.rds"))
 betas = readRDS(paste0("../Results/",filepaths[3],"_univariate_base_betas.rds"))
 
@@ -155,7 +155,7 @@ for (k in 1:nrow(pvals)){
   plot(betas[k,], -log10(pvals[k,]), pch=19,
        col=ifelse(pvals[k,] < 0.05/ncol(betas), annot.colours[annot_sub], "grey"),
        cex.lab=1.5, cex = 3,
-       main = sub(" ", "_", rownames(pvals))[k],
+       main = sub("_", " ", rownames(pvals))[k],
        ylim = c(0, max(-log10(pvals[k,]),-log10(0.05/ncol(betas)))+0.3),
        xlim = c(-max(abs(betas[k,]))-0.2, max(abs(betas[k,]))+0.2),
        ylab=expression(-log[10](italic(p))),
@@ -187,7 +187,7 @@ for (k in 1:nrow(pvals)){
 ## Sensitivity analysis: Comparison of adjusted model and model further adjusted for country ----
 annot = readRDS("../Data/Compound_family_annotation.rds")
 
-filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
+filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 for (i in 1:2){
   pvals0 = readRDS(paste0("../Results/",filepaths[i],"_univariate_adjust_pvals.rds"))
   betas0 = readRDS(paste0("../Results/",filepaths[i],"_univariate_adjust_betas.rds"))
@@ -202,8 +202,8 @@ for (i in 1:2){
     diff = rbind(diff, tmp)
   }
   rownames(diff) = rownames(pvals0)
-  saveRDS(diff, "../Results/Univariate_country_inconsistent_beta.rds")
-  write.csv(diff, "../Exports/Univariate_country_inconsistent_beta.csv")
+  saveRDS(diff, paste0("../Results/",filepaths[i],"_univariate_country_inconsistent_beta.rds"))
+  write.csv(diff, paste0("../Export/",filepaths[i],"_univariate_country_inconsistent_beta.csv"))
   
   suffix =  sub(" ", "_", rownames(pvals0))
   bonf = 0.05/ncol(pvals0)

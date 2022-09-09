@@ -32,14 +32,12 @@ expo = data[,c(7:11,31:ncol(data))]
 expo = scale(expo)
 
 # Running stability selection
-t0=Sys.time()
-out=GraphicalModel(xdata=expo, pk=c(5,ncol(expo)-5), PFER_thr=30)
-t1=Sys.time()
-print(t1-t0)
-ifelse(dir.exists("../Results/"),"",dir.create("../Results/"))
-saveRDS(out, paste0("../Results/",filepaths[m],"_graphical_network_exposures_output.rds"))
-
-# Adjacency matrix of the calibrated network
-A=Adjacency(out)
-saveRDS(A, paste0("../Results/",filepaths[m],"_graphical_network_exposures_adjacency_matrix.rds"))
-
+for (p in c(seq(10,50,10))){
+  print(paste("PFER",p))
+  t0=Sys.time()
+  out=GraphicalModel(xdata=expo, pk=c(5,ncol(expo)-5), PFER_thr=p)
+  t1=Sys.time()
+  print(t1-t0)
+  ifelse(dir.exists("../Results/"),"",dir.create("../Results/"))
+  saveRDS(out, paste0("../Results/",filepaths[m],"_graphical_network_exposures_output_PFER",p,".rds"))
+}
