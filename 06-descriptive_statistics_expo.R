@@ -15,6 +15,7 @@ pahs = readRDS("../Data/PAHs.rds")
 pest_expo = pest[,30:ncol(pest)]
 pahs_expo = pahs[,30:ncol(pahs)]
 
+## Chemical family annotation ----
 chem_family = c("PCBs","PBDEs","Organochlorine","Organophosphate","Pyrethroids",
                 "Phenylpyrazoles","Carbomates","Carboxamides","Dinitroanilines",
                 "Oxadiazines","Tobacco-related","PAH metabolites")
