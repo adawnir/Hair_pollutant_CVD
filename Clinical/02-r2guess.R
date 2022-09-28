@@ -67,24 +67,24 @@ FDRthresh = FDR.permutation(x = model,
                             path.output = perm.output,
                             Npermut = 50, nbcpu = 5)
 
-saveRDS(model, "..Results/Clinical/",filepaths[m],"_R2GUESS_model.rds")
-saveRDS(FDRthresh, "..Results/Clinical/",filepaths[m],"_R2GUESS_model_FDRthresh.rds")
-saveRDS(res.g, "..Results/Clinical/",filepaths[m],"_R2GUESS_model_res.rds")
-saveRDS(beta, "..Results/Clinical/",filepaths[m],"_R2GUESS_model_beta.rds")
+saveRDS(model, paste0("..Results/Clinical/",filepaths[m],"_R2GUESS_model.rds"))
+saveRDS(FDRthresh, paste0("..Results/Clinical/",filepaths[m],"_R2GUESS_model_FDRthresh.rds"))
+saveRDS(res.g, paste0("..Results/Clinical/",filepaths[m],"_R2GUESS_model_res.rds"))
+saveRDS(beta, paste0("..Results/Clinical/",filepaths[m],"_R2GUESS_model_beta.rds"))
 
 ifelse(dir.exists("../Figures/Clinical"),"",dir.create("../Figures/Clinical"))
 
 ## Diagnostic plots to assess the convergence of the algorithm
-jpeg("../Figures/Clinical//",filepaths[m],"_monitor_App.jpg", width = 20, height = 17, units = "cm", res = 300)
+jpeg(paste0("../Figures/Clinical//",filepaths[m],"_monitor_App.jpg"), width = 20, height = 17, units = "cm", res = 300)
 plot(model)
 dev.off()
 
 ## Diagnostic plots to assess the convergence of the algorithm
-pdf("../Figures/Clinical/",filepaths[m],"_conv1.pdf")
+pdf(paste0("../Figures/Clinical/",filepaths[m],"_conv1.pdf"))
 check.convergence(model, 1)
 dev.off()
 
-pdf("../Figures/Clinical/",filepaths[m],"_conv2.pdf")
+pdf(paste0("../Figures/Clinical/",filepaths[m],"_conv2.pdf"))
 check.convergence(model, 2)
 dev.off()
 
