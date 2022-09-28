@@ -21,7 +21,7 @@ for (i in 1:3){
   annot_sub = annot[colnames(expo)[6:ncol(expo)]]
   mat_col = data.frame(Family = c(rep("Diet intake", 5),annot_sub))
   rownames(mat_col) = colnames(expo)
-  mat_colors = list(Family = c("magenta",annot.colours[unique(annot_sub)]))
+  mat_colors = list(Family = c("#ffcc00",annot.colours[unique(annot_sub)]))
   names(mat_colors$Family) = c("Diet intake", unique(annot_sub))
   
   cor = cor(expo, method = "spearman")
@@ -81,7 +81,7 @@ legend = grid.pretty(range(as.vector(mybreaks)))
 names(legend) = legend
 color = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
 
-annot.colours.plus = c("magenta",annot.colours)
+annot.colours.plus = c("#ffcc00",annot.colours)
 names(annot.colours.plus) = c("Diet intake",names(annot.colours))
 
 {pdf("../Figures/Spearman_correlation_matrix_legend.pdf", height = 7, width = 4)

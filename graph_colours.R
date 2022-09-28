@@ -1,13 +1,13 @@
 ## Graph colours
 
 # Country
-outcome.colours = c("orange","lightcoral", "skyblue", "limegreen", "purple")
+outcome.colours = c("#ef7c10","#dc251f", "#009ee2", "#00722a", "#9364cc")
 names(outcome.colours) = c("Obesity", "Hypertension", "Diabetes", "Lipid disorder", "Metabolic syndrome")
 
 # Outcome
-country.colours = c("royalblue","tomato")
+country.colours = c("#0019a8","#dc251f")
 names(country.colours) = c("Belgium","Luxembourg")
-gender.colours = c("royalblue","tomato")
+gender.colours = c("#0019a8","#dc251f")
 names(gender.colours) = c("Male","Female")
 
 # Chemical family

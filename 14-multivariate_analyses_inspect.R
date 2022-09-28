@@ -101,7 +101,7 @@ for (i in 1:length(myfiles)){
     mymodel_recalib=glm(Y_train ~., data = as.data.frame(tmp), family="binomial")
     # Prediction using a logistic model with recalibrated beta coefficients
     tmp = as.matrix(X_test[,c(colnames(X_test)[1:7],myorder[1:k]),drop=FALSE])%*%as.matrix(coef(mymodel_recalib)[-1], ncol=1)
-    mymodel=glm(Y_test ~., data = as.data.frame(offset(tmp)), family="binomial")
+    mymodel=glm(Y_test ~offset(tmp), family="binomial")
     pred = prediction(mymodel$fitted.values, Y_test)
     f1 = performance(pred,"f")
     curve = data.frame(cutoffs = unlist(f1@x.values), f1 =unlist(f1@y.values))

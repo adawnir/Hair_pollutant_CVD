@@ -123,3 +123,29 @@ CreateScorePlot=function(mypca, filename=NULL, type, mycolours, comp=NULL, pch=1
     dev.off()
   }
 }
+
+ClusteringToGraph=function(myphylo,mycol=NULL,verbose = TRUE){
+  myphylo=as.phylo(h)
+  graph_edges = myphylo$edge
+  graph_net=graph.edgelist(graph_edges, directed=FALSE)
+  set.seed(1)
+  graph_layout = layout_with_kk(graph_net)
+  nobs = myphylo$Nnode
+  
+  if (verbose){
+    par(mar=c(0,1,0,1))
+    plot(graph_layout[,1], graph_layout[,2], type = "n", axes = FALSE,
+         xlab = "", ylab = "")
+    # draw tree branches
+    segments(
+      x0 = graph_layout[graph_edges[,1],1], 
+      y0 = graph_layout[graph_edges[,1],2],
+      x1 = graph_layout[graph_edges[,2],1],
+      y1 = graph_layout[graph_edges[,2],2],
+      col = "darkgrey", lwd = 1)
+    # add labels
+    points(graph_layout[1:nobs,1], graph_layout[1:nobs,2], pch=19,
+           col=mycol, cex = 0.5)
+  }
+  return(graph_net)
+}

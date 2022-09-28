@@ -31,7 +31,7 @@ for (m in 1:length(filepaths)){
     expo = colnames(A)[6:ncol(A)]
     
     annot_sub = annot[expo]
-    mynode_colour = c("magenta","cyan","darkviolet","yellow","lawngreen",
+    mynode_colour = c("#ffcc00","#9b0058","#00afac","#994517","#00722a",
                       annot.colours[annot_sub])
     names(mynode_colour) = colnames(A)
     

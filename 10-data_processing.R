@@ -35,10 +35,10 @@ for (i in 1:3){
   # Scree plot
   pdf(paste0("../Figures/Diet_info_pca_scree_plot_",filepaths[i],".pdf"), width=5, height=5)
   par(mar=c(5,5,1,1))
-  plot(ev, pch=19, col="navy", las=1, type="b", ylim=c(0,1),
+  plot(ev, pch=19, col="#0019a8", las=1, type="b", ylim=c(0,1),
        ylab="Proportion of explained variance", xlab="PCs")
-  points(cumsum(ev), pch=19, col="red", type="b")
-  legend("right", pch=19, col=c("navy", "red"),
+  points(cumsum(ev), pch=19, col="#dc251f", type="b")
+  legend("right", pch=19, col=c("#0019a8", "#dc251f"),
          legend=c("Proportion of e.v.", "Cumulative proportion of e.v."))
   dev.off()
 }

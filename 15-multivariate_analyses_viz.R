@@ -61,7 +61,7 @@ for (i in 1:length(myfiles)){
   # ## Check consistency of beta coefficients
   # print(all(sign(betas[selprop >= pi]) == sign(betas_m[names(betas[selprop >= pi])])))
   
-  pdf(paste0("../Figures/Multivariate_adjust_",outcome_type,"_",data_type,".pdf"), 9, height = 5)
+  pdf(paste0("../Figures/Multivariate_adjust_",outcome_type,"_",data_type,".pdf"), width = 9, height = 5)
   layout(matrix(c(1,1,2,3,3), nrow = 1, ncol = 5))
   par(mar=c(5,5,3,1), pty="s", xpd=FALSE)
   plot(x, selprop, pch=19,
@@ -69,9 +69,9 @@ for (i in 1:length(myfiles)){
        cex = ifelse(condition, 3, 1),
        cex.lab=1.2,
        ylim = c(0, 1),
-       xlim = c(min(log10(bonf),x), max(c(-log10(bonf), x))),
+       xlim = c(0, max(c(-log10(bonf), x))),
        ylab="Selection Proportion",
-       xlab=expression(-log[10](p)),
+       xlab=expression(-log[10](italic(p))),
        panel.first = c(abline(v=axTicks(1), col="grey", lty=3),
                        abline(h=axTicks(2), col="grey", lty=3)))
   
@@ -110,7 +110,7 @@ for (i in 1:length(myfiles)){
          add=TRUE)
   axis(side=2, at=axTicks(2))
   axis(side=1, at=1:length(y), labels=FALSE)
-  text(1:length(y), 10^coord[3]-0.015, labels=paste0("+ ",gsub("`","",names(y))),
+  text(1:length(y), 10^coord[3]-0.015, labels=gsub("`","",names(y)),
        srt=30, adj=1, xpd=NA)
   abline(h=1, lty=2, col=darken(outcome.colours[gsub("_"," ",outcome_type)],0.5))
   text(1:length(y),y,labels = 1:length(y),cex = 0.8)

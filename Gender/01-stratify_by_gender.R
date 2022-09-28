@@ -5,9 +5,9 @@ project_path=dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(project_path)
 setwd("../")
 
-filepaths = c("PesticidesPCBBDEs","PAHs","Combined")
+filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 
-for (m in 1:2){
+for (m in 1:3){
   # Load data
   data = readRDS(paste0("../Processed/",filepaths[m],"_XY.rds"))
   
