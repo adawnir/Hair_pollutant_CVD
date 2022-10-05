@@ -3,7 +3,6 @@
 rm(list=ls())
 project_path=dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(project_path)
-setwd("../")
 
 
 library(R2GUESS)
@@ -15,18 +14,18 @@ library(colorspace)
 filepaths = c("PesticidesPCBBDEs_train","PAHs_train")
 
 for (m in 1:2){
-  data = readRDS(paste0("../Processed/",filepaths[m],"_XY_Clinical.rds"))
-  X = data[,-c(1:17)]
+  data = readRDS(paste0("../Processed/",filepaths[m],"_XY.rds"))
+  X = data[,27:ncol(data)]
   
-  model = readRDS("..Results/Clinical/",filepaths[m],"_R2GUESS_model.rds")
-  res.g = readRDS("..Results/Clinical/",filepaths[m],"_R2GUESS_model_res.rds")
-  beta = readRDS("..Results/Clinical/",filepaths[m],"_R2GUESS_model_beta.rds")
+  model = readRDS("..Results/R2GUESS/Select_outcomes_f1_5_5_model_",filepaths[m],".rds")
+  res.g = readRDS("..Results/R2GUESS/Select_outcomes_f1_5_5_model_res_",filepaths[m],".rds")
+  beta = readRDS("..Results/R2GUESS/Select_outcomes_f1_5_5_model_beta_",filepaths[m],".rds")
   
   annot = readRDS("../Data/Compound_family_annotation.rds")
   annot_sub = annot[colnames(X)]
   
   ## MPPI plots
-  pdf(paste0("../Figures/Clinical/MPPI_",filepaths[m],".pdf"), width = 9, height = 5)
+  pdf(paste0("../Figures/R2GUESS/MPPI_",filepaths[m],".pdf"), width = 9, height = 5)
   par(mar=c(5,5,5,10))
   plotMPPI(model, threshold.model = 100, cutoff = FALSE)
   legend("topright",

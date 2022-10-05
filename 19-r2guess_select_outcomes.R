@@ -71,9 +71,9 @@ n.sweep = get.sweep.best.model(model, models = 1)
 res.g = get.g.sweep(model, n.sweep$result, 1)
 beta = sample.beta(model, res.g, Nmonte = 4, Nmonte.sigma = 4)
 
-saveRDS(model, paste0("..Results/R2GUESS/Select_outcomes_f1_5_5_model_",filepaths[m],".rds"))
-saveRDS(res.g, paste0("..Results/R2GUESS/Select_outcomes_f1_5_5_model_res_",filepaths[m],".rds"))
-saveRDS(beta, paste0("..Results/R2GUESS/Select_outcomes_f1_5_5_model_beta_",filepaths[m],".rds"))
+saveRDS(model, paste0("../Results/R2GUESS/Select_outcomes_f1_5_5_model_",filepaths[m],".rds"))
+saveRDS(res.g, paste0("../Results/R2GUESS/Select_outcomes_f1_5_5_model_res_",filepaths[m],".rds"))
+saveRDS(beta, paste0("../Results/R2GUESS/Select_outcomes_f1_5_5_model_beta_",filepaths[m],".rds"))
 
 ifelse(dir.exists("../Figures/R2GUESS/"),"",dir.create("../Figures/R2GUESS/"))
 
@@ -122,9 +122,9 @@ n.sweep = get.sweep.best.model(model, models = 1)
 res.g = get.g.sweep(model, n.sweep$result, 1)
 beta = sample.beta(model, res.g, Nmonte = 2, Nmonte.sigma = 2)
 
-saveRDS(model, paste0("..Results/R2GUESS/Select_outcomes_f3_5_5_model_",filepaths[m],".rds"))
-saveRDS(res.g, paste0("..Results/R2GUESS/Select_outcomes_f3_5_5_model_res_",filepaths[m],".rds"))
-saveRDS(beta, paste0("..Results/R2GUESS/Select_outcomes_f3_5_5_model_beta_",filepaths[m],".rds"))
+saveRDS(model, paste0("../Results/R2GUESS/Select_outcomes_f3_5_5_model_",filepaths[m],".rds"))
+saveRDS(res.g, paste0("../Results/R2GUESS/Select_outcomes_f3_5_5_model_res_",filepaths[m],".rds"))
+saveRDS(beta, paste0("../Results/R2GUESS/Select_outcomes_f3_5_5_model_beta_",filepaths[m],".rds"))
 
 ifelse(dir.exists("../Figures/"),"",dir.create("../Figures/"))
 ifelse(dir.exists("../Figures/R2GUESS/"),"",dir.create("../Figures/R2GUESS/"))
@@ -175,9 +175,9 @@ n.sweep = get.sweep.best.model(model, models = 1)
 res.g = get.g.sweep(model, n.sweep$result, 1)
 beta = sample.beta(model, res.g, Nmonte = 2, Nmonte.sigma = 2)
 
-saveRDS(model, paste0("..Results/R2GUESS/Select_outcomes_f4_5_5_model_",filepaths[m],".rds"))
-saveRDS(res.g, paste0("..Results/R2GUESS/Select_outcomes_f4_5_5_model_res_",filepaths[m],".rds"))
-saveRDS(beta, paste0("..Results/R2GUESS/Select_outcomes_f4_5_5_model_beta_",filepaths[m],".rds"))
+saveRDS(model, paste0("../Results/R2GUESS/Select_outcomes_f4_5_5_model_",filepaths[m],".rds"))
+saveRDS(res.g, paste0("../Results/R2GUESS/Select_outcomes_f4_5_5_model_res_",filepaths[m],".rds"))
+saveRDS(beta, paste0("../Results/R2GUESS/Select_outcomes_f4_5_5_model_beta_",filepaths[m],".rds"))
 
 ifelse(dir.exists("../Figures/R2GUESS/"),"",dir.create("../Figures/R2GUESS/"))
 
