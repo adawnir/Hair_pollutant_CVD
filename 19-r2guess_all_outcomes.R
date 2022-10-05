@@ -12,6 +12,7 @@ args=commandArgs(trailingOnly=TRUE)
 m=as.numeric(args[1])
 
 ifelse(dir.exists("../Processed/R2GUESS/"),"",dir.create("../Processed/R2GUESS/"))
+ifelse(dir.exists("../Results/"),"",dir.create("../Results/"))
 ifelse(dir.exists("../Results/R2GUESS/"),"",dir.create("../Results/R2GUESS/"))
 
 ## Load data
@@ -203,6 +204,7 @@ saveRDS(FDRthresh, paste0("..Results/R2GUESS/All_outcomes_f4_5_5_model_FDRthresh
 saveRDS(res.g, paste0("..Results/R2GUESS/All_outcomes_f4_5_5_model_res_",filepaths[m],".rds"))
 saveRDS(beta, paste0("..Results/R2GUESS/All_outcomes_f4_5_5_model_beta_",filepaths[m],".rds"))
 
+ifelse(dir.exists("../Figures/"),"",dir.create("../Figures/"))
 ifelse(dir.exists("../Figures/R2GUESS/"),"",dir.create("../Figures/R2GUESS/"))
 
 ## Diagnostic plots to assess the convergence of the algorithm
