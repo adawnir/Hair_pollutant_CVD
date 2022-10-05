@@ -12,16 +12,18 @@ library(tidyverse)
 args=commandArgs(trailingOnly=TRUE)
 m=as.numeric(args[1])
 
-ifelse(dir.exists("../Processed/R2GUESS/"),"",dir.create("../Processed/R2GUESS/"))
+filepaths = c("PesticidesPCBBDEs_train","PAHs_train")
+
 ifelse(dir.exists("../Results/"),"",dir.create("../Results/"))
 ifelse(dir.exists("../Results/R2GUESS/"),"",dir.create("../Results/R2GUESS/"))
+ifelse(dir.exists("../Results/R2GUESS/All_outcomes"),"",dir.create("../Results/R2GUESS/All_outcomes"))
+ifelse(dir.exists(paste0("../Results/R2GUESS/All_outcomes/",filepaths[m])),"",dir.create(paste0("../Results/R2GUESS/All_outcomes/",filepaths[m])))
 
 ## Load data
-filepaths = c("PesticidesPCBBDEs_train","PAHs_train")
 data = readRDS(paste0("../Processed/",filepaths[m],"_XY.rds"))
 tmp = model.matrix(~ Smoking + Education + Physical_activity + Alcohol, data)[,-1]
 
-Y = data[,c(17:25)]
+Y = data[,c(17:25)] # remove WC and TC
 X = data[,27:ncol(data)]
 
 # parameters
@@ -29,22 +31,22 @@ path.par = paste(system.file("extdata", package = "R2GUESS"), "/", sep = "")
 nsweep = 30000
 burn.in = 1000
 
-## All outcomes f1 5, 5 -----
-ifelse(dir.exists("../Processed/R2GUESS/All-outcomes-f1-5-5/"),"",dir.create("../Processed/R2GUESS/All-outcomes-f1-5-5/"))
-ifelse(dir.exists("../Results/R2GUESS/All-outcomes-f1-5-5/"),"",dir.create("../Results/R2GUESS/All-outcomes-f1-5-5/"))
-path.output = gsub("Scripts", "Results/R2GUESS/All-outcomes-f1-5-5", getwd())
-path.input = gsub("Scripts", "Processed/R2GUESS/All-outcomes-f1-5-5", getwd())
+path.output = gsub("Scripts", paste0("Results/R2GUESS/All_outcomes/",filepaths[m]), getwd())
 
+## All outcomes f1 5, 5 -----
+ifelse(dir.exists(paste0("../Results/R2GUESS/All_outcomes/",filepaths[m],"/f1-5-5")),"",
+       dir.create(paste0("../Results/R2GUESS/All_outcomes/",filepaths[m],"/f1-5-5")))
+path.input = sprintf("%s/f1-5-5",path.output)
 Z = cbind(data$Age,
           data$Gender,
           tmp[,1:2],
           data[,c("DietScore1","DietScore2","DietScore3")])
 Z = Z %>% mutate_if(is.factor, function(x) as.integer(x)-1)
 
-## Bayesian Variable Selection
+## Bayesian Variable Allion
 model = R2GUESS(Y, X, path.input, path.output,
                 nsweep = nsweep, burn.in = burn.in,
-                root.file.output = "All-outcomes-f1-5-5", 
+                root.file.output = "f1-5-5", 
                 path.par = path.par,
                 file.par = "Par_file_example_Hopx.xml",
                 time = TRUE, top = 100, history = TRUE,
@@ -62,8 +64,8 @@ beta = sample.beta(model, res.g, Nmonte = 4, Nmonte.sigma = 4)
 
 ## Code for running permutation to get MPPI cut-off value which controls the
 ## empirical FDR
-perm.input = gsub("Scripts", "Results/R2GUESS/All-outcomes-f1-5-5/perm_input", getwd())
-perm.output = gsub("Scripts", "Results/R2GUESS/All-outcomes-f1-5-5/perm_output", getwd())
+perm.input = sprintf("%s/perm_input/", path.input)
+perm.output = sprintf("%s/perm_output/", path.input)
 
 FDRthresh = FDR.permutation(x = model,
                             path.input = perm.input,
@@ -92,23 +94,18 @@ check.convergence(model, 2)
 dev.off()
 
 ## All outcomes f3 5, 5 -----
-ifelse(dir.exists("../Processed/R2GUESS/All-outcomes-f3-5-5/"),"",dir.create("../Processed/R2GUESS/All-outcomes-f3-5-5/"))
-ifelse(dir.exists("../Results/R2GUESS/All-outcomes-f3-5-5/"),"",dir.create("../Results/R2GUESS/All-outcomes-f3-5-5/"))
-path.output = gsub("Scripts", "Results/R2GUESS/All-outcomes-f3-5-5", getwd())
-path.input = gsub("Scripts", "Processed/R2GUESS/All-outcomes-f3-5-5", getwd())
+ifelse(dir.exists(paste0("../Results/R2GUESS/All_outcomes/",filepaths[m],"/f3-5-5")),"",
+       dir.create(paste0("../Results/R2GUESS/All_outcomes/",filepaths[m],"/f3-5-5")))
+path.input = sprintf("%s/f3-5-5",path.output)
 
 Z = cbind(data$Age,
              data$Gender,
              tmp[,1:2],
              data[,c("DietScore1","DietScore2","DietScore3")],
              tmp[,3:4])
-Z = Z %>% mutate_if(is.factor, function(x) as.integer(x)-1)
+Z = Z %>% mutate_if(is.factor, function(x) as.integer(x)-1) %>% as.matrix()
 
-path.par = paste(system.file("extdata", package = "R2GUESS"), "/", sep = "")
-nsweep = 30000
-burn.in = 1000
-
-## Bayesian Variable Selection
+## Bayesian Variable Allion
 model = R2GUESS(Y, X, path.input, path.output,
                 nsweep = nsweep, burn.in = burn.in,
                 root.file.output = "All-outcomes-f3-5-5", 
@@ -125,12 +122,12 @@ model = R2GUESS(Y, X, path.input, path.output,
 set.seed(3)
 n.sweep = get.sweep.best.model(model, models = 1)
 res.g = get.g.sweep(model, n.sweep$result, 1)
-beta = sample.beta(model, res.g, Nmonte = 4, Nmonte.sigma = 4)
+beta = sample.beta(model, res.g, Nmonte = 2, Nmonte.sigma = 2)
 
 ## Code for running permutation to get MPPI cut-off value which controls the
 ## empirical FDR
-perm.input = gsub("Scripts", "Results/R2GUESS/All-outcomes-f3-5-5/perm_input", getwd())
-perm.output = gsub("Scripts", "Results/R2GUESS/All-outcomes-f3-5-5/perm_output", getwd())
+perm.input = sprintf("%s/perm_input/", path.input)
+perm.output = sprintf("%s/perm_output/", path.input)
 
 FDRthresh = FDR.permutation(x = model,
                             path.input = perm.input,
@@ -142,6 +139,7 @@ saveRDS(FDRthresh, paste0("..Results/R2GUESS/All_outcomes_f3_5_5_model_FDRthresh
 saveRDS(res.g, paste0("..Results/R2GUESS/All_outcomes_f3_5_5_model_res_",filepaths[m],".rds"))
 saveRDS(beta, paste0("..Results/R2GUESS/All_outcomes_f3_5_5_model_beta_",filepaths[m],".rds"))
 
+ifelse(dir.exists("../Figures/"),"",dir.create("../Figures/"))
 ifelse(dir.exists("../Figures/R2GUESS/"),"",dir.create("../Figures/R2GUESS/"))
 
 ## Diagnostic plots to assess the convergence of the algorithm
@@ -159,22 +157,22 @@ check.convergence(model, 2)
 dev.off()
 
 ## All outcomes f4 5, 5 -----
-ifelse(dir.exists("../Processed/R2GUESS/All-outcomes-f4-5-5/"),"",dir.create("../Processed/R2GUESS/All-outcomes-f4-5-5/"))
-ifelse(dir.exists("../Results/R2GUESS/All-outcomes-f4-5-5/"),"",dir.create("../Results/R2GUESS/All-outcomes-f4-5-5/"))
-path.output = gsub("Scripts", "Results/R2GUESS/All-outcomes-f4-5-5", getwd())
-path.input = gsub("Scripts", "Processed/R2GUESS/All-outcomes-f4-5-5", getwd())
+ifelse(dir.exists(paste0("../Results/R2GUESS/All_outcomes/",filepaths[m],"/f4-5-5")),"",
+       dir.create(paste0("../Results/R2GUESS/All_outcomes/",filepaths[m],"/f4-5-5")))
+path.input = sprintf("%s/f4-5-5",path.output)
+
 
 Z = cbind(data$Age,
              data$Gender,
              tmp[,1:2],
              data[,c("DietScore1","DietScore2","DietScore3")],
              tmp[,3:ncol(tmp)])
-Z = Z %>% mutate_if(is.factor, function(x) as.integer(x)-1)
+Z = Z %>% mutate_if(is.factor, function(x) as.integer(x)-1) %>% as.matrix()
 
-## Bayesian Variable Selection
+## Bayesian Variable Allion
 model = R2GUESS(Y, X, path.input, path.output,
                 nsweep = nsweep, burn.in = burn.in,
-                root.file.output = "All-outcomes-f4-5-5", 
+                root.file.output = paste0("All-outcomes-f4-5-5-",filepaths[m]), 
                 path.par = path.par,
                 file.par = "Par_file_example_Hopx.xml",
                 time = TRUE, top = 100, history = TRUE,
@@ -188,12 +186,12 @@ model = R2GUESS(Y, X, path.input, path.output,
 set.seed(3)
 n.sweep = get.sweep.best.model(model, models = 1)
 res.g = get.g.sweep(model, n.sweep$result, 1)
-beta = sample.beta(model, res.g, Nmonte = 4, Nmonte.sigma = 4)
+beta = sample.beta(model, res.g, Nmonte = 2, Nmonte.sigma = 2)
 
 ## Code for running permutation to get MPPI cut-off value which controls the
 ## empirical FDR
-perm.input = gsub("Scripts", "Results/R2GUESS/All-outcomes-f4-5-5/perm_input", getwd())
-perm.output = gsub("Scripts", "Results/R2GUESS/All-outcomes-f4-5-5/perm_output", getwd())
+perm.input = sprintf("%s/perm_input/", path.input)
+perm.output = sprintf("%s/perm_output/", path.input)
 
 FDRthresh = FDR.permutation(x = model,
                             path.input = perm.input,
@@ -205,7 +203,6 @@ saveRDS(FDRthresh, paste0("..Results/R2GUESS/All_outcomes_f4_5_5_model_FDRthresh
 saveRDS(res.g, paste0("..Results/R2GUESS/All_outcomes_f4_5_5_model_res_",filepaths[m],".rds"))
 saveRDS(beta, paste0("..Results/R2GUESS/All_outcomes_f4_5_5_model_beta_",filepaths[m],".rds"))
 
-ifelse(dir.exists("../Figures/"),"",dir.create("../Figures/"))
 ifelse(dir.exists("../Figures/R2GUESS/"),"",dir.create("../Figures/R2GUESS/"))
 
 ## Diagnostic plots to assess the convergence of the algorithm

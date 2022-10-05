@@ -12,12 +12,14 @@ library(tidyverse)
 args=commandArgs(trailingOnly=TRUE)
 m=as.numeric(args[1])
 
-ifelse(dir.exists("../Processed/R2GUESS/"),"",dir.create("../Processed/R2GUESS/"))
+filepaths = c("PesticidesPCBBDEs_train","PAHs_train")
+
 ifelse(dir.exists("../Results/"),"",dir.create("../Results/"))
 ifelse(dir.exists("../Results/R2GUESS/"),"",dir.create("../Results/R2GUESS/"))
+ifelse(dir.exists("../Results/R2GUESS/Select_outcomes"),"",dir.create("../Results/R2GUESS/Select_outcomes"))
+ifelse(dir.exists(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m])),"",dir.create(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m])))
 
 ## Load data
-filepaths = c("PesticidesPCBBDEs_train","PAHs_train")
 data = readRDS(paste0("../Processed/",filepaths[m],"_XY.rds"))
 tmp = model.matrix(~ Smoking + Education + Physical_activity + Alcohol, data)[,-1]
 
@@ -29,12 +31,12 @@ path.par = paste(system.file("extdata", package = "R2GUESS"), "/", sep = "")
 nsweep = 30000
 burn.in = 1000
 
-## All outcomes f1 5, 5 -----
-ifelse(dir.exists("../Processed/R2GUESS/Select-outcomes-f1-5-5/"),"",dir.create("../Processed/R2GUESS/Select-outcomes-f1-5-5/"))
-ifelse(dir.exists("../Results/R2GUESS/Select-outcomes-f1-5-5/"),"",dir.create("../Results/R2GUESS/Select-outcomes-f1-5-5/"))
-path.output = gsub("Scripts", "Results/R2GUESS/Select-outcomes-f1-5-5", getwd())
-path.input = gsub("Scripts", "Processed/R2GUESS/Select-outcomes-f1-5-5", getwd())
+path.output = gsub("Scripts", paste0("Results/R2GUESS/Select_outcomes/",filepaths[m]), getwd())
 
+## All outcomes f1 5, 5 -----
+ifelse(dir.exists(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f1-5-5")),"",
+       dir.create(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f1-5-5")))
+path.input = sprintf("%s/f1-5-5",path.output)
 Z = cbind(data$Age,
           data$Gender,
           tmp[,1:2],
@@ -44,7 +46,7 @@ Z = Z %>% mutate_if(is.factor, function(x) as.integer(x)-1)
 ## Bayesian Variable Selection
 model = R2GUESS(Y, X, path.input, path.output,
                 nsweep = nsweep, burn.in = burn.in,
-                root.file.output = "Select-outcomes-f1-5-5", 
+                root.file.output = "f1-5-5", 
                 path.par = path.par,
                 file.par = "Par_file_example_Hopx.xml",
                 time = TRUE, top = 100, history = TRUE,
@@ -62,8 +64,8 @@ beta = sample.beta(model, res.g, Nmonte = 4, Nmonte.sigma = 4)
 
 ## Code for running permutation to get MPPI cut-off value which controls the
 ## empirical FDR
-perm.input = gsub("Scripts", "Results/R2GUESS/Select-outcomes-f1-5-5/perm_input", getwd())
-perm.output = gsub("Scripts", "Results/R2GUESS/Select-outcomes-f1-5-5/perm_output", getwd())
+perm.input = sprintf("%s/perm_input/", path.input)
+perm.output = sprintf("%s/perm_output/", path.input)
 
 FDRthresh = FDR.permutation(x = model,
                             path.input = perm.input,
@@ -92,10 +94,9 @@ check.convergence(model, 2)
 dev.off()
 
 ## All outcomes f3 5, 5 -----
-ifelse(dir.exists("../Processed/R2GUESS/Select-outcomes-f3-5-5/"),"",dir.create("../Processed/R2GUESS/Select-outcomes-f3-5-5/"))
-ifelse(dir.exists("../Results/R2GUESS/Select-outcomes-f3-5-5/"),"",dir.create("../Results/R2GUESS/Select-outcomes-f3-5-5/"))
-path.output = gsub("Scripts", "Results/R2GUESS/Select-outcomes-f3-5-5", getwd())
-path.input = gsub("Scripts", "Processed/R2GUESS/Select-outcomes-f3-5-5", getwd())
+ifelse(dir.exists(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f3-5-5")),"",
+       dir.create(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f3-5-5")))
+path.input = sprintf("%s/f3-5-5",path.output)
 
 Z = cbind(data$Age,
              data$Gender,
@@ -125,8 +126,8 @@ beta = sample.beta(model, res.g, Nmonte = 2, Nmonte.sigma = 2)
 
 ## Code for running permutation to get MPPI cut-off value which controls the
 ## empirical FDR
-perm.input = gsub("Scripts", "Results/R2GUESS/Select-outcomes-f3-5-5/perm_input", getwd())
-perm.output = gsub("Scripts", "Results/R2GUESS/Select-outcomes-f3-5-5/perm_output", getwd())
+perm.input = sprintf("%s/perm_input/", path.input)
+perm.output = sprintf("%s/perm_output/", path.input)
 
 FDRthresh = FDR.permutation(x = model,
                             path.input = perm.input,
@@ -156,10 +157,10 @@ check.convergence(model, 2)
 dev.off()
 
 ## All outcomes f4 5, 5 -----
-ifelse(dir.exists("../Processed/R2GUESS/Select-outcomes-f4-5-5/"),"",dir.create("../Processed/R2GUESS/Select-outcomes-f4-5-5/"))
-ifelse(dir.exists("../Results/R2GUESS/Select-outcomes-f4-5-5/"),"",dir.create("../Results/R2GUESS/Select-outcomes-f4-5-5/"))
-path.output = gsub("Scripts", "Results/R2GUESS/Select-outcomes-f4-5-5", getwd())
-path.input = gsub("Scripts", "Processed/R2GUESS/Select-outcomes-f4-5-5", getwd())
+ifelse(dir.exists(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f4-5-5")),"",
+       dir.create(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f4-5-5")))
+path.input = sprintf("%s/f4-5-5",path.output)
+
 
 Z = cbind(data$Age,
              data$Gender,
@@ -171,7 +172,7 @@ Z = Z %>% mutate_if(is.factor, function(x) as.integer(x)-1) %>% as.matrix()
 ## Bayesian Variable Selection
 model = R2GUESS(Y, X, path.input, path.output,
                 nsweep = nsweep, burn.in = burn.in,
-                root.file.output = "Select-outcomes-f4-5-5", 
+                root.file.output = paste0("Select-outcomes-f4-5-5-",filepaths[m]), 
                 path.par = path.par,
                 file.par = "Par_file_example_Hopx.xml",
                 time = TRUE, top = 100, history = TRUE,
@@ -189,8 +190,8 @@ beta = sample.beta(model, res.g, Nmonte = 2, Nmonte.sigma = 2)
 
 ## Code for running permutation to get MPPI cut-off value which controls the
 ## empirical FDR
-perm.input = gsub("Scripts", "Results/R2GUESS/Select-outcomes-f4-5-5/perm_input", getwd())
-perm.output = gsub("Scripts", "Results/R2GUESS/Select-outcomes-f4-5-5/perm_output", getwd())
+perm.input = sprintf("%s/perm_input/", path.input)
+perm.output = sprintf("%s/perm_output/", path.input)
 
 FDRthresh = FDR.permutation(x = model,
                             path.input = perm.input,
