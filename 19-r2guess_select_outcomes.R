@@ -12,6 +12,15 @@ library(tidyverse)
 args=commandArgs(trailingOnly=TRUE)
 m=as.numeric(args[1])
 
+if(m==1){
+  egam = 5
+  sgam = 5
+}
+if(m==2){
+  egam = 2
+  sgam = 2
+}
+
 filepaths = c("PesticidesPCBBDEs_train","PAHs_train")
 
 ifelse(dir.exists("../Results/"),"",dir.create("../Results/"))
@@ -34,9 +43,9 @@ burn.in = 1000
 path.output = gsub("Scripts", paste0("Results/R2GUESS/Select_outcomes/",filepaths[m]), getwd())
 
 ## All outcomes f1 5, 5 -----
-ifelse(dir.exists(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f1-5-5")),"",
-       dir.create(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f1-5-5")))
-path.input = sprintf("%s/f1-5-5",path.output)
+ifelse(dir.exists(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f1")),"",
+       dir.create(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f1")))
+path.input = sprintf("%s/f1",path.output)
 Z = cbind(data$Age,
           data$Gender,
           tmp[,1:2],
@@ -46,11 +55,11 @@ Z = Z %>% mutate_if(is.factor, function(x) as.integer(x)-1)
 ## Bayesian Variable Selection
 model = R2GUESS(Y, X, path.input, path.output,
                 nsweep = nsweep, burn.in = burn.in,
-                root.file.output = "f1-5-5", 
+                root.file.output = "f1", 
                 path.par = path.par,
                 file.par = "Par_file_example_Hopx.xml",
                 time = TRUE, top = 100, history = TRUE,
-                Egam = 5, Sgam = 5, label.Y = colnames(Y), 
+                Egam = egam, Sgam = sgam, label.Y = colnames(Y), 
                 nb.chain = 3,
                 conf = Z, cuda = FALSE,
                 MAP.file = NULL, seed = 2)
@@ -94,9 +103,9 @@ check.convergence(model, 2)
 dev.off()
 
 ## All outcomes f3 5, 5 -----
-ifelse(dir.exists(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f3-5-5")),"",
-       dir.create(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f3-5-5")))
-path.input = sprintf("%s/f3-5-5",path.output)
+ifelse(dir.exists(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f3")),"",
+       dir.create(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f3")))
+path.input = sprintf("%s/f3",path.output)
 
 Z = cbind(data$Age,
              data$Gender,
@@ -108,11 +117,11 @@ Z = Z %>% mutate_if(is.factor, function(x) as.integer(x)-1) %>% as.matrix()
 ## Bayesian Variable Selection
 model = R2GUESS(Y, X, path.input, path.output,
                 nsweep = nsweep, burn.in = burn.in,
-                root.file.output = "Select-outcomes-f3-5-5", 
+                root.file.output = "Select-outcomes-f3", 
                 path.par = path.par,
                 file.par = "Par_file_example_Hopx.xml",
                 time = TRUE, top = 100, history = TRUE,
-                Egam = 5, Sgam = 5, label.Y = colnames(Y), 
+                Egam = egam, Sgam = sgam, label.Y = colnames(Y), 
                 nb.chain = 3,
                 conf = Z, cuda = FALSE,
                 MAP.file = NULL, seed = 2)
@@ -157,9 +166,9 @@ check.convergence(model, 2)
 dev.off()
 
 ## All outcomes f4 5, 5 -----
-ifelse(dir.exists(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f4-5-5")),"",
-       dir.create(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f4-5-5")))
-path.input = sprintf("%s/f4-5-5",path.output)
+ifelse(dir.exists(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f4")),"",
+       dir.create(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f4")))
+path.input = sprintf("%s/f4",path.output)
 
 
 Z = cbind(data$Age,
@@ -172,11 +181,11 @@ Z = Z %>% mutate_if(is.factor, function(x) as.integer(x)-1) %>% as.matrix()
 ## Bayesian Variable Selection
 model = R2GUESS(Y, X, path.input, path.output,
                 nsweep = nsweep, burn.in = burn.in,
-                root.file.output = paste0("Select-outcomes-f4-5-5-",filepaths[m]), 
+                root.file.output = paste0("Select-outcomes-f4-",filepaths[m]), 
                 path.par = path.par,
                 file.par = "Par_file_example_Hopx.xml",
                 time = TRUE, top = 100, history = TRUE,
-                Egam = 5, Sgam = 5, label.Y = colnames(Y), 
+                Egam = egam, Sgam = sgam, label.Y = colnames(Y), 
                 nb.chain = 3,
                 conf = Z, cuda = FALSE,
                 MAP.file = NULL, seed = 2)
@@ -193,13 +202,8 @@ beta = sample.beta(model, res.g, Nmonte = 2, Nmonte.sigma = 2)
 perm.input = sprintf("%s/perm_input/", path.input)
 perm.output = sprintf("%s/perm_output/", path.input)
 
-FDRthresh = FDR.permutation(x = model,
-                            path.input = perm.input,
-                            path.output = perm.output,
-                            Npermut = 50, nbcpu = 5)
 
 saveRDS(model, paste0("..Results/R2GUESS/Select_outcomes_f4_5_5_model_",filepaths[m],".rds"))
-saveRDS(FDRthresh, paste0("..Results/R2GUESS/Select_outcomes_f4_5_5_model_FDRthresh_",filepaths[m],".rds"))
 saveRDS(res.g, paste0("..Results/R2GUESS/Select_outcomes_f4_5_5_model_res_",filepaths[m],".rds"))
 saveRDS(beta, paste0("..Results/R2GUESS/Select_outcomes_f4_5_5_model_beta_",filepaths[m],".rds"))
 

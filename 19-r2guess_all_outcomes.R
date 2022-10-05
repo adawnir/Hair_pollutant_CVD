@@ -12,6 +12,16 @@ library(tidyverse)
 args=commandArgs(trailingOnly=TRUE)
 m=as.numeric(args[1])
 
+
+if(m==1){
+  egam = 5
+  sgam = 5
+}
+if(m==2){
+  egam = 2
+  sgam = 2
+}
+
 filepaths = c("PesticidesPCBBDEs_train","PAHs_train")
 
 ifelse(dir.exists("../Results/"),"",dir.create("../Results/"))
@@ -50,7 +60,7 @@ model = R2GUESS(Y, X, path.input, path.output,
                 path.par = path.par,
                 file.par = "Par_file_example_Hopx.xml",
                 time = TRUE, top = 100, history = TRUE,
-                Egam = 5, Sgam = 5, label.Y = colnames(Y), 
+                Egam = egam, Sgam = sgam, label.Y = colnames(Y), 
                 nb.chain = 3,
                 conf = Z, cuda = FALSE,
                 MAP.file = NULL, seed = 2)
@@ -67,13 +77,7 @@ beta = sample.beta(model, res.g, Nmonte = 4, Nmonte.sigma = 4)
 perm.input = sprintf("%s/perm_input/", path.input)
 perm.output = sprintf("%s/perm_output/", path.input)
 
-FDRthresh = FDR.permutation(x = model,
-                            path.input = perm.input,
-                            path.output = perm.output,
-                            Npermut = 50, nbcpu = 5)
-
 saveRDS(model, paste0("..Results/R2GUESS/All_outcomes_f1_5_5_model_",filepaths[m],".rds"))
-saveRDS(FDRthresh, paste0("..Results/R2GUESS/All_outcomes_f1_5_5_model_FDRthresh_",filepaths[m],".rds"))
 saveRDS(res.g, paste0("..Results/R2GUESS/All_outcomes_f1_5_5_model_res_",filepaths[m],".rds"))
 saveRDS(beta, paste0("..Results/R2GUESS/All_outcomes_f1_5_5_model_beta_",filepaths[m],".rds"))
 
@@ -112,7 +116,7 @@ model = R2GUESS(Y, X, path.input, path.output,
                 path.par = path.par,
                 file.par = "Par_file_example_Hopx.xml",
                 time = TRUE, top = 100, history = TRUE,
-                Egam = 5, Sgam = 5, label.Y = colnames(Y), 
+                Egam = egam, Sgam = sgam, label.Y = colnames(Y), 
                 nb.chain = 3,
                 conf = Z, cuda = FALSE,
                 MAP.file = NULL, seed = 2)
@@ -176,7 +180,7 @@ model = R2GUESS(Y, X, path.input, path.output,
                 path.par = path.par,
                 file.par = "Par_file_example_Hopx.xml",
                 time = TRUE, top = 100, history = TRUE,
-                Egam = 5, Sgam = 5, label.Y = colnames(Y), 
+                Egam = egam, Sgam = sgam,  label.Y = colnames(Y), 
                 nb.chain = 3,
                 conf = Z, cuda = FALSE,
                 MAP.file = NULL, seed = 2)
