@@ -19,7 +19,6 @@ for (m in 1:2){
   X = data[,-c(1:17)]
   
   model = readRDS("..Results/Clinical/",filepaths[m],"_R2GUESS_model.rds")
-  FDRthresh = readRDS("..Results/Clinical/",filepaths[m],"_R2GUESS_model_FDRthresh.rds")
   res.g = readRDS("..Results/Clinical/",filepaths[m],"_R2GUESS_model_res.rds")
   beta = readRDS("..Results/Clinical/",filepaths[m],"_R2GUESS_model_beta.rds")
   
@@ -47,11 +46,7 @@ for (m in 1:2){
   res.boxplot = boxplotbeta(model, beta, variable = "21")
   res.boxplot = boxplotbeta(model, beta, variable = "29")
   dev.off()
-  
-  ## Plot of the Marginal Posterior Probabilities of Inclusion (MPPIs)
-  pdf(paste0("../Figures/Clinical/MPPI_application_",filepaths[m],".pdf"), width = 9, height = 5)
-  plotMPPI(model, threshold.variable = FDRthresh$cutoff_int)
-  dev.off()
+ 
   ## Figure 14-(a): variables included in the best models
   pdf(paste0("../Figures/Clinical/Variables_included_top20_models_",filepaths[m],".pdf"))
   plotvariable(model, 20)

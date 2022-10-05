@@ -72,11 +72,6 @@ n.sweep = get.sweep.best.model(model, models = 1)
 res.g = get.g.sweep(model, n.sweep$result, 1)
 beta = sample.beta(model, res.g, Nmonte = 4, Nmonte.sigma = 4)
 
-## Code for running permutation to get MPPI cut-off value which controls the
-## empirical FDR
-perm.input = sprintf("%s/perm_input/", path.input)
-perm.output = sprintf("%s/perm_output/", path.input)
-
 saveRDS(model, paste0("..Results/R2GUESS/All_outcomes_f1_5_5_model_",filepaths[m],".rds"))
 saveRDS(res.g, paste0("..Results/R2GUESS/All_outcomes_f1_5_5_model_res_",filepaths[m],".rds"))
 saveRDS(beta, paste0("..Results/R2GUESS/All_outcomes_f1_5_5_model_beta_",filepaths[m],".rds"))
@@ -128,18 +123,7 @@ n.sweep = get.sweep.best.model(model, models = 1)
 res.g = get.g.sweep(model, n.sweep$result, 1)
 beta = sample.beta(model, res.g, Nmonte = 2, Nmonte.sigma = 2)
 
-## Code for running permutation to get MPPI cut-off value which controls the
-## empirical FDR
-perm.input = sprintf("%s/perm_input/", path.input)
-perm.output = sprintf("%s/perm_output/", path.input)
-
-FDRthresh = FDR.permutation(x = model,
-                            path.input = perm.input,
-                            path.output = perm.output,
-                            Npermut = 50, nbcpu = 5)
-
 saveRDS(model, paste0("..Results/R2GUESS/All_outcomes_f3_5_5_model_",filepaths[m],".rds"))
-saveRDS(FDRthresh, paste0("..Results/R2GUESS/All_outcomes_f3_5_5_model_FDRthresh_",filepaths[m],".rds"))
 saveRDS(res.g, paste0("..Results/R2GUESS/All_outcomes_f3_5_5_model_res_",filepaths[m],".rds"))
 saveRDS(beta, paste0("..Results/R2GUESS/All_outcomes_f3_5_5_model_beta_",filepaths[m],".rds"))
 
@@ -192,18 +176,7 @@ n.sweep = get.sweep.best.model(model, models = 1)
 res.g = get.g.sweep(model, n.sweep$result, 1)
 beta = sample.beta(model, res.g, Nmonte = 2, Nmonte.sigma = 2)
 
-## Code for running permutation to get MPPI cut-off value which controls the
-## empirical FDR
-perm.input = sprintf("%s/perm_input/", path.input)
-perm.output = sprintf("%s/perm_output/", path.input)
-
-FDRthresh = FDR.permutation(x = model,
-                            path.input = perm.input,
-                            path.output = perm.output,
-                            Npermut = 50, nbcpu = 5)
-
 saveRDS(model, paste0("..Results/R2GUESS/All_outcomes_f4_5_5_model_",filepaths[m],".rds"))
-saveRDS(FDRthresh, paste0("..Results/R2GUESS/All_outcomes_f4_5_5_model_FDRthresh_",filepaths[m],".rds"))
 saveRDS(res.g, paste0("..Results/R2GUESS/All_outcomes_f4_5_5_model_res_",filepaths[m],".rds"))
 saveRDS(beta, paste0("..Results/R2GUESS/All_outcomes_f4_5_5_model_beta_",filepaths[m],".rds"))
 
