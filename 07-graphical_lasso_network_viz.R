@@ -17,16 +17,17 @@ annot = readRDS("../Data/Compound_family_annotation.rds")
 filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 for (m in 1:length(filepaths)){
   for (p in seq(10,50,10)){
-    out = readRDS(paste0("../Results/",filepaths[m],"_graphical_network_exposures_output_PFER",p,".rds"))
+    out = readRDS(paste0("../Results/Graphical_lasso_network/",filepaths[m],"_exposures_network_output_PFER",p,".rds"))
     ifelse(dir.exists("../Figures/"),"",dir.create("../Figures/"))
-    pdf(paste0("../Figures/Graphical_network_exposures_output_",filepaths[m],"_PFER",p,".pdf"), width = 15)
+    ifelse(dir.exists("../Figures/Descriptive_statistics/"),"",dir.create("../Figures/Descriptive_statistics/"))
+    pdf(paste0("../Figures/Descriptive_statistics/Graphical_network_exposures_output_",filepaths[m],"_PFER",p,".pdf"), width = 15)
     par(mar = c(7,5,7,6), mfrow = c(1, 3), pty = "s")
     CalibrationPlot(out)
     dev.off()
     
     # Adjacency matrix of the calibrated network
     A=Adjacency(out)
-    saveRDS(A, paste0("../Results/",filepaths[m],"_graphical_network_exposures_adjacency_matrix_PFER",p,".rds"))
+    saveRDS(A, paste0("../Results/Graphical_network/",filepaths[m],"_exposures_network_adjacency_matrix_PFER",p,".rds"))
     
     expo = colnames(A)[6:ncol(A)]
     
@@ -55,7 +56,7 @@ for (m in 1:length(filepaths)){
     V(mygraph)$shape = rep(c("square","circle"),c(5,length(expo)))
     
     # Plot clusters in graph
-    pdf(paste0("../Figures/Graphical_network_exposures_community_",filepaths[m],"_PFER",p,".pdf"))
+    pdf(paste0("../Figures/Descriptive_statistics/Graphical_network_exposures_community_",filepaths[m],"_PFER",p,".pdf"))
     par(mar=rep(1,4), xpd = TRUE)
     set.seed(1)
     plot(mygraph, layout=layout_with_fr(mygraph),
@@ -67,7 +68,7 @@ for (m in 1:length(filepaths)){
   }
 }
 
-{pdf("../Figures/Graphical_network_exposures_legend.pdf", height = 3, width = 3)
+{pdf("../Figures/Descriptive_statistics/Graphical_network_exposures_legend.pdf", height = 3, width = 3)
   grid.newpage()
   for(e in 1:length(annot.colours)) {
     grid.circle(

@@ -28,7 +28,7 @@ filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 data = readRDS(paste0("../Processed/",filepaths[m],"_info_expo_ndimp_naimp_log.rds"))
 
 # Standardisaiton
-expo = data[,c(7:11,31:ncol(data))]
+expo = data[,c(10:14,34:ncol(data))]
 expo = scale(expo)
 
 # Running stability selection
@@ -39,5 +39,6 @@ for (p in c(seq(10,50,10))){
   t1=Sys.time()
   print(t1-t0)
   ifelse(dir.exists("../Results/"),"",dir.create("../Results/"))
-  saveRDS(out, paste0("../Results/",filepaths[m],"_graphical_network_exposures_output_PFER",p,".rds"))
+  ifelse(dir.exists("../Results/Graphical_network/"),"",dir.create("../Results/Graphical_network/"))
+  saveRDS(out, paste0("../Results/Graphical_network/",filepaths[m],"_exposures_network_output_PFER",p,".rds"))
 }

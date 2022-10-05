@@ -3,14 +3,13 @@
 Below is the recommended workflow for this project:  
 ## Data preparation and processing
 1. 00-data_preparation.R: Cleaning data and outcome ascertainment
-2. 01-data_preprocessing.R: Missing/detection rate, nd imputation, NA imputation
+2. 02-data_preprocessing.R: Missing/detection rate, nd imputation, NA imputation
  and log transformation
+3. 03-naimp_diagnostics.R: Distribution of exposure comparing observed and imputed values
+
  
 ## Descriptive analysis
-1. 02-expo_distribution.R: Distribution of exposure stratified by country
-2. 02-naimp_diagnostics.R: Distribution of exposure comparing observed and imputed values
-3. 02-descriptive_statistics.R: Tables containing descriptive summary of covariates, exposures and outcomes
-4. 02-venn_diagram.R: Venn diagrams showing concurrence of outcomes
+1. 01-descriptive_statistics: Population characteristics, outcome prevalence, venn diagram
 5. 02-correlation.R: Spearman correlation matrices for exposures
 6. 02-pca.R: Principal component analysis of population based on exposure matrices
 7. 02-graphical_lasso_network.R, Graphical lasso network of exposures

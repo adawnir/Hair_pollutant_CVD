@@ -18,14 +18,13 @@ rownames(pest) = pest$identifiant
 dim(pest)    # 989   70
 
 # Subset relevant columns
-pest = pest[,-which(colnames(pest) %in% c("Fasting","Alcohol","Education","Physical_activity",
-                                          "LDLC_HDLC","MetS_WC","MetS_TG","MetS_HDLC",
+pest = pest[,-which(colnames(pest) %in% c("Fasting","LDLC_HDLC","MetS_WC","MetS_TG","MetS_HDLC",
                                           "MetS_BP","MetS_FPG"))]
 
 str(pest)
 colnames(pest)[1] = "ID"
-colnames(pest)[20:22] = c("Diabetes_medication","Hypertension_medication","Lipid_disorder_medication")
-colnames(pest)[26:27] = c("Lipid_disorder","Metabolic_syndrome")
+colnames(pest)[23:25] = c("Diabetes_medication","Hypertension_medication","Lipid_disorder_medication")
+colnames(pest)[29:30] = c("Lipid_disorder","Metabolic_syndrome")
 
 # Set classes for variables
 class(pest$ID)
@@ -42,10 +41,21 @@ pest$Gender = relevel(pest$Gender, "Male")
 table(pest$Smoking)
 pest$Smoking = factor(pest$Smoking, 1:3, labels = c("Never smoker","Former smoker","Current smoker"))
 
+table(pest$Physical_activity)
+pest$Physical_activity = factor(pest$Physical_activity, 1:3, labels = c("Inactive","Moderately active","Active"))
+
+table(pest$Alcohol)
+pest$Alcohol = factor(pest$Alcohol, 1:3, labels = c("Low","Moderate","High"))
+
+table(pest$Education)
+pest$Education = factor(pest$Education, 1:3, labels = c("Low","Intermediate","High"))
+
 str(pest)
 
 ## Exclude participants with >50% nutrient information missing
-pest = pest[rowSums(is.na(pest[7:11]))/5 < 0.5,]
+hist(rowSums(is.na(pest[10:14]))/5)
+pest = pest[rowSums(is.na(pest[10:14]))/5 < 0.5,]
+hist(rowSums(is.na(pest[6:14]))/9)
 
 ## Covariate transformation
 summary(pest$BMI)
@@ -71,6 +81,9 @@ class(pest$WC_cat)
 pest$Diabetes_medication = factor(pest$Diabetes_medication)
 pest$Hypertension_medication = factor(pest$Hypertension_medication)
 pest$Lipid_disorder_medication = factor(pest$Lipid_disorder_medication)
+
+pest = pest %>% mutate_at(vars(ends_with("_medication")),
+                          function(x) factor(x, 0:1, labels = c("No","Yes")))
 
 ## Outcome ascertainment
 # Obesity
@@ -125,13 +138,15 @@ table(pest$Metabolic_syndrome)
 pest$Metabolic_syndrome = factor(pest$Metabolic_syndrome)
 class(pest$Metabolic_syndrome)
 
-## Reorder columns
+# Reorder columns
 colnames(pest)
-pest = pest[,c(1:27,61:62,28:60)]
+
+pest = cbind(pest[,c(1:30,ncol(pest)-1,ncol(pest))], pest[,c(33:ncol(pest)-2)])
 
 ifelse(dir.exists("../Exports/"), "", dir.create("../Exports/"))
+ifelse(dir.exists("../Exports/Data/"), "", dir.create("../Exports/Data/"))
 saveRDS(pest, "../Data/PesticidesPCBBDEs.rds")
-write.csv(pest, "../Exports/PesticidesPCBBDEs.csv")
+write.csv(pest, "../Exports/Data/PesticidesPCBBDEs.csv")
 
 ### PAHs ----
 ## Extract exposure matrices
@@ -143,14 +158,14 @@ rownames(pahs) = pahs$identifiant
 dim(pahs)    # 670   50
 
 # Subset relevant columns
-pahs = pahs[,-which(colnames(pahs) %in% c("Fasting","Alcohol","Education","Physical_activity",
-                                          "LDLC_HDLC","MetS_WC","MetS_TG","MetS_HDLC",
+pahs = pahs[,-which(colnames(pahs) %in% c("Fasting","LDLC_HDLC",
+                                          "MetS_WC","MetS_TG","MetS_HDLC",
                                           "MetS_BP","MetS_FPG"))]
 
 str(pahs)
 colnames(pahs)[1] = "ID"
-colnames(pahs)[20:22] = c("Diabetes_medication","Hypertension_medication","Lipid_disorder_medication")
-colnames(pahs)[26:27] = c("Lipid_disorder","Metabolic_syndrome")
+colnames(pahs)[23:25] = c("Diabetes_medication","Hypertension_medication","Lipid_disorder_medication")
+colnames(pahs)[29:30] = c("Lipid_disorder","Metabolic_syndrome")
 
 # Set classes for variables
 class(pahs$ID)
@@ -167,10 +182,21 @@ pahs$Gender = relevel(pahs$Gender, "Male")
 table(pahs$Smoking)
 pahs$Smoking = factor(pahs$Smoking, 1:3, labels = c("Never smoker","Former smoker","Current smoker"))
 
+table(pahs$Physical_activity)
+pahs$Physical_activity = factor(pahs$Physical_activity, 1:3, labels = c("Inactive","Moderately active","Active"))
+
+table(pahs$Alcohol)
+pahs$Alcohol = factor(pahs$Alcohol, 1:3, labels = c("Low","Moderate","High"))
+
+table(pahs$Education)
+pahs$Education = factor(pahs$Education, 1:3, labels = c("Low","Intermediate","High"))
+
 str(pahs)
 
 ## Exclude participants with >50% nutrient information missing
-pahs = pahs[rowSums(is.na(pahs[7:11]))/5 < 0.5,]
+hist(rowSums(is.na(pest[10:14]))/5)
+pahs = pahs[rowSums(is.na(pahs[10:14]))/5 < 0.5,]
+hist(rowSums(is.na(pest[6:14]))/9)
 
 ## Covariate transformation
 # BMI
@@ -199,6 +225,9 @@ class(pahs$WC_cat)
 pahs$Diabetes_medication = factor(pahs$Diabetes_medication)
 pahs$Hypertension_medication = factor(pahs$Hypertension_medication)
 pahs$Lipid_disorder_medication = factor(pahs$Lipid_disorder_medication)
+
+pahs = pahs %>% mutate_at(vars(ends_with("_medication")),
+                          function(x) factor(x, 0:1, labels = c("No","Yes")))
 
 ## Outcome ascertainment
 # Obesity
@@ -253,12 +282,13 @@ table(pahs$Metabolic_syndrome)
 pahs$Metabolic_syndrome = factor(pahs$Metabolic_syndrome)
 class(pahs$Metabolic_syndrome)
 
-## Reorder columns
+# Reorder columns
 colnames(pahs)
-pahs = pahs[,c(1:27,41:42,28:40)]
+
+pahs = cbind(pahs[,c(1:30,ncol(pahs)-1,ncol(pahs))], pahs[,c(33:ncol(pahs)-2)])
 
 saveRDS(pahs, "../Data/PAHs.rds")
-write.csv(pahs, "../Exports/PAHs.csv")
+write.csv(pahs, "../Exports/Data/PAHs.csv")
 
 ### Train/Test split----
 
@@ -267,11 +297,11 @@ train_pest = pest[setdiff(pest$ID, pahs$ID),]
 train_pahs = pahs[setdiff(pahs$ID, pest$ID),]
 
 # Check if covariate information is consistent
-all.equal(pest[(intersect(pest$ID, pahs$ID)),1:29],pahs[(intersect(pest$ID, pahs$ID)),1:29])
+all.equal(pest[(intersect(pest$ID, pahs$ID)),1:32],pahs[(intersect(pest$ID, pahs$ID)),1:32])
 
 # Overlapping participants for validation
 test = cbind(pest[(intersect(pest$ID, pahs$ID)),],
-             pahs[(intersect(pest$ID, pahs$ID)),30:ncol(pahs)])
+             pahs[(intersect(pest$ID, pahs$ID)),33:ncol(pahs)])
 colnames(test)
 str(test)
 
@@ -281,9 +311,9 @@ train_pahs = train_pahs %>% mutate_if(is.factor,droplevels)
 test = test %>% mutate_if(is.factor,droplevels)
 
 ### Combine all participants (covariate and outcome information)----
-outer = rbind(train_pest[,1:29],
-              train_pahs[,1:29],
-              test[,1:29])
+outer = rbind(train_pest[,1:32],
+              train_pahs[,1:32],
+              test[,1:32])
 colnames(outer)
 str(outer)
 
@@ -296,7 +326,7 @@ table(outer$Country,outer$data_type)
 summary(outer)
 
 saveRDS(outer, "../Data/All_participants_info.rds")
-write.csv(outer, "../Exports/All_participants_info.csv")
+write.csv(outer, "../Exports/Data/All_participants_info.csv")
 
 
 

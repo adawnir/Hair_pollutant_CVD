@@ -10,14 +10,13 @@ library(pheatmap)
 library(RColorBrewer)
 library(grid)
 
-## Correlation matrix ----
+## Exposure correlation matrix ----
 filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 for (i in 1:3){
   data = readRDS(paste0("../Processed/",filepaths[i],"_info_expo_ndimp_naimp_log.rds"))
-  expo = data[c(7:11,31:ncol(data))]
+  expo = data[c(10:14,34:ncol(data))]
   print(ncol(expo))
   
-  ### Correlation matrix ----
   annot_sub = annot[colnames(expo)[6:ncol(expo)]]
   mat_col = data.frame(Family = c(rep("Diet intake", 5),annot_sub))
   rownames(mat_col) = colnames(expo)
@@ -27,7 +26,7 @@ for (i in 1:3){
   cor = cor(expo, method = "spearman")
   width = height = 0.1*nrow(cor)+3.5
   mybreaks = seq(-1, 1, length = 100)
-  {pdf(paste0("../Figures/Spearman_correlation_matrix_",filepaths[i],".pdf"), width = width, height = height)
+  {pdf(paste0("../Figures/Descriptive_statistics/Spearman_correlation_matrix_",filepaths[i],".pdf"), width = width, height = height)
     pheatmap(cor,
              cellwidth = 8, cellheight = 8,
              border_color = NA, breaks = mybreaks,
@@ -42,17 +41,42 @@ for (i in 1:3){
 filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 for (i in 1:3){
   data = readRDS(paste0("../Processed/",filepaths[i],"_info_expo_ndimp_naimp_log.rds"))
-  expo = data[,31:ncol(data)]
+  expo = data[c(10:14,34:ncol(data))]
   print(ncol(expo))
   tmp = cor(expo, method = "spearman")
   tmp[lower.tri(tmp, diag = T)] = NA
   high_corr = cbind(rownames(tmp)[which(abs(tmp) > 0.5, arr.ind = TRUE)[,1]],
                     colnames(tmp)[which(abs(tmp) > 0.5, arr.ind = TRUE)[,2]],
                     tmp[which(abs(tmp) > 0.5, arr.ind = TRUE)])
-  write.csv(high_corr, file = paste0("../Exports/",filepaths[i],"_high_corr_comp.csv"))
+  write.csv(high_corr, file = paste0("../Exports/Descriptive_statistics/Highly_correlated_compounds_",filepaths[i],".csv"))
 }
 
-## Legend for correlation matrices
+## Outcome correlation matrix ----
+data = readRDS(paste0("../Data/All_participants_info.rds"))
+out = data[c(5,15:22)]
+print(ncol(out))
+
+cor = cor(out, method = "spearman")
+width = height = 0.1*nrow(cor)+1
+mybreaks = seq(-1, 1, length = 100)
+{pdf(paste0("../Figures/Descriptive_statistics/Spearman_correlation_matrix_outcome.pdf"), width = width, height = height)
+  pheatmap(cor,
+           cellwidth = 8, cellheight = 8,
+           border_color = NA, breaks = mybreaks,
+           treeheight_row = 0, treeheight_col = 0,
+           legend = FALSE)
+  dev.off()
+}
+
+tmp = cor(out, method = "spearman")
+tmp[lower.tri(tmp, diag = T)] = NA
+high_corr = cbind(rownames(tmp)[which(abs(tmp) > 0.5, arr.ind = TRUE)[,1]],
+                  colnames(tmp)[which(abs(tmp) > 0.5, arr.ind = TRUE)[,2]],
+                  tmp[which(abs(tmp) > 0.5, arr.ind = TRUE)])
+write.csv(high_corr, file = paste0("../Exports/Descriptive_statistics/Highly_correlated_outcomes_All_participants.csv"))
+
+
+## Legend for correlation matrices ----
 draw_legend = function(color, breaks, legend, ...){
   color = color[!is.infinite(breaks)]
   breaks = breaks[!is.infinite(breaks)]
@@ -84,7 +108,7 @@ color = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
 annot.colours.plus = c("#ffcc00",annot.colours)
 names(annot.colours.plus) = c("Diet intake",names(annot.colours))
 
-{pdf("../Figures/Spearman_correlation_matrix_legend.pdf", height = 7, width = 4)
+{pdf("../Figures/Descriptive_statistics/Spearman_correlation_matrix_legend.pdf", height = 7, width = 4)
   grid.newpage()
   grid.draw(draw_legend(color, mybreaks, legend))
   for(e in 1:length(annot.colours.plus)) {

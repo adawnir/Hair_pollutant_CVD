@@ -8,22 +8,23 @@ source("functions.R")
 # library(imputeLCMD)
 library(missForest)
 
+ifelse(dir.exists("../Processed/"), "", dir.create("../Processed/"))
+
 ## Load data ----
 pest = readRDS("../Data/PesticidesPCBBDEs.rds")
 pahs = readRDS("../Data/PAHs.rds")
 
 # Subset exposures
 colnames(pest)
-pest_expo = pest[,30:ncol(pest)]
+pest_expo = pest[,33:ncol(pest)]
 colnames(pahs)
-pahs_expo = pahs[,30:ncol(pahs)]
+pahs_expo = pahs[,33:ncol(pahs)]
 
 ## Proportion of NAs per chemical compounds ----
 pest_na_prop = apply(pest_expo, 2, function(x) sum(is.na(x))/nrow(pest_expo))
 pest_prop = sort(pest_na_prop, decreasing = TRUE)
 
-ifelse(dir.exists("../Figures/"), "", dir.create("../Figures/"))
-pdf("../Figures/Missing_prop_PesticidesPCBBDEs.pdf", width = 9, height = 4.75)
+pdf("../Figures/Descriptive_statistics/Missing_prop_PesticidesPCBBDEs.pdf", width = 9, height = 4.75)
 par(mar=c(9,5,2,1))
 plot(pest_prop, type = "h", ylab="Proportion missing", xlab="", xaxt = "n", lwd=1, ylim = c(0,1),
      col=ifelse(pest_prop>=0.5, yes="tomato", no="black"), cex.lab=1.5)
@@ -38,8 +39,7 @@ dev.off()
 pahs_na_prop = apply(pahs_expo, 2, function(x) sum(is.na(x))/nrow(pahs_expo))
 pahs_prop = sort(pahs_na_prop, decreasing = TRUE)
 
-ifelse(dir.exists("../Figures/"), "", dir.create("../Figures/"))
-pdf("../Figures/Missing_prop_PAHs.pdf", width = 9, height = 6)
+pdf("../Figures/Descriptive_statistics/Missing_prop_PAHs.pdf", width = 9, height = 6)
 par(mar=c(16,5,2,1))
 plot(pahs_prop, type = "h", ylab="Proportion missing", xlab="", xaxt = "n", lwd=1, ylim = c(0,1),
      col=ifelse(pahs_prop>=0.5, yes="tomato", no="black"), cex.lab=1.5)
@@ -59,8 +59,7 @@ summary(apply(pahs_expo, 1, function(x) sum(is.na(x))/ncol(pahs_expo)))
 pest_nd_prop = apply(pest_expo, 2, function(x) sum(x=="nd", na.rm = TRUE)/nrow(pest_expo))
 pest_prop =sort(1-(pest_nd_prop+pest_na_prop), decreasing = TRUE)
 
-ifelse(dir.exists("../Figures/"), "", dir.create("../Figures/"))
-pdf("../Figures/Detection_prop_PesticidesPCBBDEs.pdf", width = 9, height = 4.75)
+pdf("../Figures/Descriptive_statistics/Detection_prop_PesticidesPCBBDEs.pdf", width = 9, height = 4.75)
 par(mar=c(9,5,2,1))
 plot(pest_prop, type = "h", ylab="Proportion detected", xlab="", xaxt = "n", lwd=1, ylim = c(0,1),
      col=ifelse(pest_prop<=0.1, yes="tomato", no="black"), cex.lab=1.5)
@@ -75,8 +74,7 @@ dev.off()
 pahs_nd_prop = apply(pahs_expo, 2, function(x) sum(x=="nd", na.rm = TRUE)/nrow(pahs_expo))
 pahs_prop = sort(1-(pahs_nd_prop+pahs_na_prop), decreasing = TRUE)
 
-ifelse(dir.exists("../Figures/"), "", dir.create("../Figures/"))
-pdf("../Figures/Detection_prop_PAHs.pdf", width = 9, height = 6)
+pdf("../Figures/Descriptive_statistics/Detection_prop_PAHs.pdf", width = 9, height = 6)
 par(mar=c(16,5,2,1))
 plot(pahs_prop, type = "h", ylab="Proportion detected", xlab="", xaxt = "n", lwd=1, ylim = c(0,1),
      col=ifelse(pahs_prop<=0.1, yes="tomato", no="black"), cex.lab=1.5)
@@ -125,9 +123,9 @@ summary(pest_expo)
 summary(pahs_expo)
 
 saveRDS(pest_expo, "../Processed/PesticidesPCBBDEs_ndimp.rds")
-write.csv(pest_expo, paste0("../Exports/PesticidesPCBBDEs_ndimp.csv"))
+write.csv(pest_expo, paste0("../Exports/Data/PesticidesPCBBDEs_ndimp.csv"))
 saveRDS(pahs_expo, "../Processed/PAHs_ndimp.rds")
-write.csv(pahs_expo, paste0("../Exports/PAHs_ndimp.csv"))
+write.csv(pahs_expo, paste0("../Exports/Data/PAHs_ndimp.csv"))
 
 ## Splitting data sets ----
 outer = readRDS("../Data/All_participants_info.rds")
@@ -154,44 +152,44 @@ saveRDS(test, "../Processed/Overlap_test_info_expo_ndimp.rds")
 
 ## Exposures
 set.seed(202204)
-imp = missForest(train_pest[,31:ncol(train_pest)])
+imp = missForest(train_pest[,34:ncol(train_pest)])
 imp$OOBerror
-train_pest[,31:ncol(train_pest)] = imp$ximp
+train_pest[,34:ncol(train_pest)] = imp$ximp
 
 set.seed(202204)
-imp = missForest(train_pahs[,31:ncol(train_pahs)])
+imp = missForest(train_pahs[,34:ncol(train_pahs)])
 imp$OOBerror
-train_pahs[,31:ncol(train_pahs)] = imp$ximp
+train_pahs[,34:ncol(train_pahs)] = imp$ximp
 
 set.seed(202204)
-imp = missForest(test[,31:ncol(test)])
+imp = missForest(test[,34:ncol(test)])
 imp$OOBerror
-test[,31:ncol(test)] = imp$ximp
+test[,34:ncol(test)] = imp$ximp
 
-## Diet information
+## Covariate information
 set.seed(202204)
-imp = missForest(train_pest[,2:30])
+imp = missForest(train_pest[,2:32])
 imp$OOBerror
-train_pest[,2:30] = imp$ximp
-
-set.seed(202204)
-imp = missForest(train_pahs[,2:30])
-imp$OOBerror
-train_pahs[,2:30] = imp$ximp
+train_pest[,2:32] = imp$ximp
 
 set.seed(202204)
-imp = missForest(test[,2:30])
+imp = missForest(train_pahs[,2:32])
 imp$OOBerror
-test[,2:30] = imp$ximp
+train_pahs[,2:32] = imp$ximp
+
+set.seed(202204)
+imp = missForest(test[,2:32])
+imp$OOBerror
+test[,2:32] = imp$ximp
 
 saveRDS(train_pest, "../Processed/PesticidesPCBBDEs_train_info_expo_ndimp_naimp.rds")
 saveRDS(train_pahs, "../Processed/PAHs_train_info_expo_ndimp_naimp.rds")
 saveRDS(test, "../Processed/Overlap_test_info_expo_ndimp_naimp.rds")
 
 ## Log10 transformation ----
-train_pest[,31:ncol(train_pest)] = log10(train_pest[,31:ncol(train_pest)])
-train_pahs[,31:ncol(train_pahs)] = log10(train_pahs[,31:ncol(train_pahs)])
-test[,31:ncol(test)] = log10(test[,31:ncol(test)])
+train_pest[,34:ncol(train_pest)] = log10(train_pest[,34:ncol(train_pest)])
+train_pahs[,34:ncol(train_pahs)] = log10(train_pahs[,34:ncol(train_pahs)])
+test[,34:ncol(test)] = log10(test[,34:ncol(test)])
 
 saveRDS(train_pest, "../Processed/PesticidesPCBBDEs_train_info_expo_ndimp_naimp_log.rds")
 saveRDS(train_pahs, "../Processed/PAHs_train_info_expo_ndimp_naimp_log.rds")

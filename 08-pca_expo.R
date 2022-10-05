@@ -18,7 +18,7 @@ filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 for (i in 1:3){
   # Load data
   data = readRDS(paste0("../Processed/",filepaths[i],"_info_expo_ndimp_naimp_log.rds"))
-  expo = data[,31:ncol(data)]
+  expo = data[,34:ncol(data)]
   print(ncol(expo))
   
   mypca=PCA(expo, graph = FALSE)
@@ -26,7 +26,7 @@ for (i in 1:3){
   
   CreateScorePlot(mypca=mypca, type=as.character(data$Country),
                   mycolours=country.colours[levels(data$Country)],
-                  filename=paste0("../Figures/PCA_score_plot_by_Country_",filepaths[i],".pdf"),
+                  filename=paste0("../Figures/Descriptive_statistics/PCA_score_plot_by_Country_",filepaths[i],".pdf"),
                   ellipse = TRUE)
   # CreateScorePlot(mypca=mypca, type=as.character(data$Gender),
   #                 mycolours=gender.colours[levels(data$Gender)],
