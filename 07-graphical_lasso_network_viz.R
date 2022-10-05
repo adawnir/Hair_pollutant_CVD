@@ -17,7 +17,7 @@ annot = readRDS("../Data/Compound_family_annotation.rds")
 filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 for (m in 1:length(filepaths)){
   for (p in seq(10,50,10)){
-    out = readRDS(paste0("../Results/Graphical_lasso_network/",filepaths[m],"_exposures_network_output_PFER",p,".rds"))
+    out = readRDS(paste0("../Results/Graphical_network/",filepaths[m],"_exposures_network_output_PFER",p,".rds"))
     ifelse(dir.exists("../Figures/"),"",dir.create("../Figures/"))
     ifelse(dir.exists("../Figures/Descriptive_statistics/"),"",dir.create("../Figures/Descriptive_statistics/"))
     pdf(paste0("../Figures/Descriptive_statistics/Graphical_network_exposures_output_",filepaths[m],"_PFER",p,".pdf"), width = 15)

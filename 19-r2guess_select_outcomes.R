@@ -21,7 +21,7 @@ filepaths = c("PesticidesPCBBDEs_train","PAHs_train")
 data = readRDS(paste0("../Processed/",filepaths[m],"_XY.rds"))
 tmp = model.matrix(~ Smoking + Education + Physical_activity + Alcohol, data)[,-1]
 
-Y = data[,-c(17,19,20,22:25)] # remove WC and TC
+Y = data[,c(17,19,20,22:25)] # remove WC and TC
 X = data[,27:ncol(data)]
 
 # parameters
@@ -35,11 +35,11 @@ ifelse(dir.exists("../Results/R2GUESS/Select-outcomes-f1-5-5/"),"",dir.create(".
 path.output = gsub("Scripts", "Results/R2GUESS/Select-outcomes-f1-5-5", getwd())
 path.input = gsub("Scripts", "Processed/R2GUESS/Select-outcomes-f1-5-5", getwd())
 
-conf = cbind(data$Age,
+Z = cbind(data$Age,
           data$Gender,
           tmp[,1:2],
           data[,c("DietScore1","DietScore2","DietScore3")])
-conf = conf %>% mutate_if(is.factor, function(x) as.integer(x)-1)
+Z = Z %>% mutate_if(is.factor, function(x) as.integer(x)-1)
 
 ## Bayesian Variable Selection
 model = R2GUESS(Y, X, path.input, path.output,
@@ -50,7 +50,7 @@ model = R2GUESS(Y, X, path.input, path.output,
                 time = TRUE, top = 100, history = TRUE,
                 Egam = 5, Sgam = 5, label.Y = colnames(Y), 
                 nb.chain = 3,
-                conf = conf, cuda = FALSE,
+                conf = Z, cuda = FALSE,
                 MAP.file = NULL, seed = 2)
 
 # summary(model, 100)
@@ -97,12 +97,12 @@ ifelse(dir.exists("../Results/R2GUESS/Select-outcomes-f3-5-5/"),"",dir.create(".
 path.output = gsub("Scripts", "Results/R2GUESS/Select-outcomes-f3-5-5", getwd())
 path.input = gsub("Scripts", "Processed/R2GUESS/Select-outcomes-f3-5-5", getwd())
 
-conf = cbind(data$Age,
+Z = cbind(data$Age,
              data$Gender,
              tmp[,1:2],
              data[,c("DietScore1","DietScore2","DietScore3")],
              tmp[,3:4])
-conf = conf %>% mutate_if(is.factor, function(x) as.integer(x)-1)
+Z = Z %>% mutate_if(is.factor, function(x) as.integer(x)-1) %>% as.matrix()
 
 ## Bayesian Variable Selection
 model = R2GUESS(Y, X, path.input, path.output,
@@ -113,7 +113,7 @@ model = R2GUESS(Y, X, path.input, path.output,
                 time = TRUE, top = 100, history = TRUE,
                 Egam = 5, Sgam = 5, label.Y = colnames(Y), 
                 nb.chain = 3,
-                conf = conf, cuda = FALSE,
+                conf = Z, cuda = FALSE,
                 MAP.file = NULL, seed = 2)
 
 # summary(model, 100)
@@ -161,12 +161,12 @@ ifelse(dir.exists("../Results/R2GUESS/Select-outcomes-f4-5-5/"),"",dir.create(".
 path.output = gsub("Scripts", "Results/R2GUESS/Select-outcomes-f4-5-5", getwd())
 path.input = gsub("Scripts", "Processed/R2GUESS/Select-outcomes-f4-5-5", getwd())
 
-conf = cbind(data$Age,
+Z = cbind(data$Age,
              data$Gender,
              tmp[,1:2],
              data[,c("DietScore1","DietScore2","DietScore3")],
              tmp[,3:ncol(tmp)])
-conf = conf %>% mutate_if(is.factor, function(x) as.integer(x)-1)
+Z = Z %>% mutate_if(is.factor, function(x) as.integer(x)-1) %>% as.matrix()
 
 ## Bayesian Variable Selection
 model = R2GUESS(Y, X, path.input, path.output,
@@ -177,7 +177,7 @@ model = R2GUESS(Y, X, path.input, path.output,
                 time = TRUE, top = 100, history = TRUE,
                 Egam = 5, Sgam = 5, label.Y = colnames(Y), 
                 nb.chain = 3,
-                conf = conf, cuda = FALSE,
+                conf = Z, cuda = FALSE,
                 MAP.file = NULL, seed = 2)
 
 # summary(model, 100)
