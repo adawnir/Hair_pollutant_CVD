@@ -35,8 +35,8 @@ Z = Z %>% mutate_if(is.factor, function(x) as.integer(x)-1)
 
 X_denoised=NULL
 f1='X[,k] ~ data$Age + data$Gender + `SmokingFormer smoker` + `SmokingCurrent smoker` + DietScore1 + DietScore2 + DietScore3'
-f3='X[,k] ~ data$Age + data$Gender + `SmokingFormer smoker` + `SmokingCurrent smoker`  DietScore1 + DietScore2 + DietScore3 + EducationIntermediate + EducationHigh'
-f4='X[,k] ~ data$Age + data$Gender + `SmokingFormer smoker` + `SmokingCurrent smoker`  DietScore1 + DietScore2 + DietScore3 + EducationIntermediate + EducationHigh + `Physical_activityModerately active` + Physical_activityActive + AlcoholModerate + AlcoholHigh'
+f3='X[,k] ~ data$Age + data$Gender + `SmokingFormer smoker` + `SmokingCurrent smoker` + DietScore1 + DietScore2 + DietScore3 + EducationIntermediate + EducationHigh'
+f4='X[,k] ~ data$Age + data$Gender + `SmokingFormer smoker` + `SmokingCurrent smoker` + DietScore1 + DietScore2 + DietScore3 + EducationIntermediate + EducationHigh + `Physical_activityModerately active` + Physical_activityActive + AlcoholModerate + AlcoholHigh'
 
 for (f in c(1,3,4)){
   for (k in seq(1:ncol(X))){
