@@ -145,7 +145,7 @@ for (m in 1:2){
   
   # Extract data
   Y = data[,c(17:25)]
-  Y = scale(Y)
+  # Y = scale(Y)
   outcome = colnames(Y)
   
   tmp = model.matrix(~ Smoking + Education + Physical_activity + Alcohol, data)[,-1]

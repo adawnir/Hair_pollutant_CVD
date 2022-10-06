@@ -144,9 +144,9 @@ for (i in 1:3){
   Y = data[,c(17:25)]
   str(Y)
   
-  # Scale outcomes
-  Y = scale(Y)
-  
+  # # Scale outcomes
+  # Y = scale(Y)
+
   # Scale exposures
   expo = scale(expo)
   

@@ -12,7 +12,6 @@ library(tidyverse)
 args=commandArgs(trailingOnly=TRUE)
 m=as.numeric(args[1])
 
-
 if(m==1){
   egam = 5
   sgam = 5
@@ -26,14 +25,17 @@ filepaths = c("PesticidesPCBBDEs_train","PAHs_train")
 
 ifelse(dir.exists("../Results/"),"",dir.create("../Results/"))
 ifelse(dir.exists("../Results/R2GUESS/"),"",dir.create("../Results/R2GUESS/"))
-ifelse(dir.exists("../Results/R2GUESS/All_outcomes"),"",dir.create("../Results/R2GUESS/All_outcomes"))
-ifelse(dir.exists(paste0("../Results/R2GUESS/All_outcomes/",filepaths[m])),"",dir.create(paste0("../Results/R2GUESS/All_outcomes/",filepaths[m])))
+ifelse(dir.exists("../Results/R2GUESS/Select_outcomes"),"",dir.create("../Results/R2GUESS/Select_outcomes"))
+ifelse(dir.exists(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m])),"",dir.create(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m])))
+
+ifelse(dir.exists("../Figures/"),"",dir.create("../Figures/"))
+ifelse(dir.exists("../Figures/R2GUESS/"),"",dir.create("../Figures/R2GUESS/"))
 
 ## Load data
 data = readRDS(paste0("../Processed/",filepaths[m],"_XY.rds"))
 tmp = model.matrix(~ Smoking + Education + Physical_activity + Alcohol, data)[,-1]
 
-Y = data[,c(17:25)] # remove WC and TC
+Y = data[,c(17,19,20,22:25)] # remove WC and TC
 X = data[,27:ncol(data)]
 
 # parameters
@@ -41,22 +43,22 @@ path.par = paste(system.file("extdata", package = "R2GUESS"), "/", sep = "")
 nsweep = 30000
 burn.in = 1000
 
-path.output = gsub("Scripts", paste0("Results/R2GUESS/All_outcomes/",filepaths[m]), getwd())
+path.output = gsub("Scripts", paste0("Results/R2GUESS/Select_outcomes/",filepaths[m]), getwd())
 
 ## All outcomes f1 5, 5 -----
-ifelse(dir.exists(paste0("../Results/R2GUESS/All_outcomes/",filepaths[m],"/f1-5-5")),"",
-       dir.create(paste0("../Results/R2GUESS/All_outcomes/",filepaths[m],"/f1-5-5")))
-path.input = sprintf("%s/f1-5-5",path.output)
+ifelse(dir.exists(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f1")),"",
+       dir.create(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f1")))
+path.input = sprintf("%s/f1",path.output)
 Z = cbind(data$Age,
           data$Gender,
           tmp[,1:2],
           data[,c("DietScore1","DietScore2","DietScore3")])
 Z = Z %>% mutate_if(is.factor, function(x) as.integer(x)-1)
 
-## Bayesian Variable Allion
+## Bayesian Variable Selection
 model = R2GUESS(Y, X, path.input, path.output,
                 nsweep = nsweep, burn.in = burn.in,
-                root.file.output = "f1-5-5", 
+                root.file.output = "f1", 
                 path.par = path.par,
                 file.par = "Par_file_example_Hopx.xml",
                 time = TRUE, top = 100, history = TRUE,
@@ -72,30 +74,28 @@ n.sweep = get.sweep.best.model(model, models = 1)
 res.g = get.g.sweep(model, n.sweep$result, 1)
 beta = sample.beta(model, res.g, Nmonte = 4, Nmonte.sigma = 4)
 
-saveRDS(model, paste0("../Results/R2GUESS/All_outcomes_f1_5_5_model_",filepaths[m],".rds"))
-saveRDS(res.g, paste0("../Results/R2GUESS/All_outcomes_f1_5_5_model_res_",filepaths[m],".rds"))
-saveRDS(beta, paste0("../Results/R2GUESS/All_outcomes_f1_5_5_model_beta_",filepaths[m],".rds"))
-
-ifelse(dir.exists("../Figures/R2GUESS/"),"",dir.create("../Figures/R2GUESS/"))
+saveRDS(model, paste0("../Results/R2GUESS/Select_outcomes_f1_5_5_model_",filepaths[m],".rds"))
+saveRDS(res.g, paste0("../Results/R2GUESS/Select_outcomes_f1_5_5_model_res_",filepaths[m],".rds"))
+saveRDS(beta, paste0("../Results/R2GUESS/Select_outcomes_f1_5_5_model_beta_",filepaths[m],".rds"))
 
 ## Diagnostic plots to assess the convergence of the algorithm
-jpeg(paste0("../Figures/R2GUESS/All_outcomes_f1_5_5_monitor_App_",filepaths[m],".jpg"), width = 20, height = 17, units = "cm", res = 300)
+jpeg(paste0("../Figures/R2GUESS/Select_outcomes_f1_5_5_monitor_App_",filepaths[m],".jpg"), width = 20, height = 17, units = "cm", res = 300)
 plot(model)
 dev.off()
 
 ## Diagnostic plots to assess the convergence of the algorithm
-pdf(paste0("../Figures/R2GUESS/All_outcomes_f1_5_5_conv1_",filepaths[m],".pdf"))
+pdf(paste0("../Figures/R2GUESS/Select_outcomes_f1_5_5_conv1_",filepaths[m],".pdf"))
 check.convergence(model, 1)
 dev.off()
 
-pdf(paste0("../Figures/R2GUESS/All_outcomes_f1_5_5_conv2_",filepaths[m],".pdf"))
+pdf(paste0("../Figures/R2GUESS/Select_outcomes_f1_5_5_conv2_",filepaths[m],".pdf"))
 check.convergence(model, 2)
 dev.off()
 
 ## All outcomes f3 5, 5 -----
-ifelse(dir.exists(paste0("../Results/R2GUESS/All_outcomes/",filepaths[m],"/f3-5-5")),"",
-       dir.create(paste0("../Results/R2GUESS/All_outcomes/",filepaths[m],"/f3-5-5")))
-path.input = sprintf("%s/f3-5-5",path.output)
+ifelse(dir.exists(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f3")),"",
+       dir.create(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f3")))
+path.input = sprintf("%s/f3",path.output)
 
 Z = cbind(data$Age,
              data$Gender,
@@ -104,10 +104,10 @@ Z = cbind(data$Age,
              tmp[,3:4])
 Z = Z %>% mutate_if(is.factor, function(x) as.integer(x)-1) %>% as.matrix()
 
-## Bayesian Variable Allion
+## Bayesian Variable Selection
 model = R2GUESS(Y, X, path.input, path.output,
                 nsweep = nsweep, burn.in = burn.in,
-                root.file.output = "All-outcomes-f3-5-5", 
+                root.file.output = "Select-outcomes-f3", 
                 path.par = path.par,
                 file.par = "Par_file_example_Hopx.xml",
                 time = TRUE, top = 100, history = TRUE,
@@ -123,31 +123,28 @@ n.sweep = get.sweep.best.model(model, models = 1)
 res.g = get.g.sweep(model, n.sweep$result, 1)
 beta = sample.beta(model, res.g, Nmonte = 2, Nmonte.sigma = 2)
 
-saveRDS(model, paste0("../Results/R2GUESS/All_outcomes_f3_5_5_model_",filepaths[m],".rds"))
-saveRDS(res.g, paste0("../Results/R2GUESS/All_outcomes_f3_5_5_model_res_",filepaths[m],".rds"))
-saveRDS(beta, paste0("../Results/R2GUESS/All_outcomes_f3_5_5_model_beta_",filepaths[m],".rds"))
-
-ifelse(dir.exists("../Figures/"),"",dir.create("../Figures/"))
-ifelse(dir.exists("../Figures/R2GUESS/"),"",dir.create("../Figures/R2GUESS/"))
+saveRDS(model, paste0("../Results/R2GUESS/Select_outcomes_f3_5_5_model_",filepaths[m],".rds"))
+saveRDS(res.g, paste0("../Results/R2GUESS/Select_outcomes_f3_5_5_model_res_",filepaths[m],".rds"))
+saveRDS(beta, paste0("../Results/R2GUESS/Select_outcomes_f3_5_5_model_beta_",filepaths[m],".rds"))
 
 ## Diagnostic plots to assess the convergence of the algorithm
-jpeg(paste0("../Figures/R2GUESS/All_outcomes_f3_5_5_monitor_App_",filepaths[m],".jpg"), width = 20, height = 17, units = "cm", res = 300)
+jpeg(paste0("../Figures/R2GUESS/Select_outcomes_f3_5_5_monitor_App_",filepaths[m],".jpg"), width = 20, height = 17, units = "cm", res = 300)
 plot(model)
 dev.off()
 
 ## Diagnostic plots to assess the convergence of the algorithm
-pdf(paste0("../Figures/R2GUESS/All_outcomes_f3_5_5_conv1_",filepaths[m],".pdf"))
+pdf(paste0("../Figures/R2GUESS/Select_outcomes_f3_5_5_conv1_",filepaths[m],".pdf"))
 check.convergence(model, 1)
 dev.off()
 
-pdf(paste0("../Figures/R2GUESS/All_outcomes_f3_5_5_conv2_",filepaths[m],".pdf"))
+pdf(paste0("../Figures/R2GUESS/Select_outcomes_f3_5_5_conv2_",filepaths[m],".pdf"))
 check.convergence(model, 2)
 dev.off()
 
 ## All outcomes f4 5, 5 -----
-ifelse(dir.exists(paste0("../Results/R2GUESS/All_outcomes/",filepaths[m],"/f4-5-5")),"",
-       dir.create(paste0("../Results/R2GUESS/All_outcomes/",filepaths[m],"/f4-5-5")))
-path.input = sprintf("%s/f4-5-5",path.output)
+ifelse(dir.exists(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f4")),"",
+       dir.create(paste0("../Results/R2GUESS/Select_outcomes/",filepaths[m],"/f4")))
+path.input = sprintf("%s/f4",path.output)
 
 
 Z = cbind(data$Age,
@@ -157,14 +154,14 @@ Z = cbind(data$Age,
              tmp[,3:ncol(tmp)])
 Z = Z %>% mutate_if(is.factor, function(x) as.integer(x)-1) %>% as.matrix()
 
-## Bayesian Variable Allion
+## Bayesian Variable Selection
 model = R2GUESS(Y, X, path.input, path.output,
                 nsweep = nsweep, burn.in = burn.in,
-                root.file.output = paste0("All-outcomes-f4-5-5-",filepaths[m]), 
+                root.file.output = paste0("Select-outcomes-f4-",filepaths[m]), 
                 path.par = path.par,
                 file.par = "Par_file_example_Hopx.xml",
                 time = TRUE, top = 100, history = TRUE,
-                Egam = egam, Sgam = sgam,  label.Y = colnames(Y), 
+                Egam = egam, Sgam = sgam, label.Y = colnames(Y), 
                 nb.chain = 3,
                 conf = Z, cuda = FALSE,
                 MAP.file = NULL, seed = 2)
@@ -176,23 +173,21 @@ n.sweep = get.sweep.best.model(model, models = 1)
 res.g = get.g.sweep(model, n.sweep$result, 1)
 beta = sample.beta(model, res.g, Nmonte = 2, Nmonte.sigma = 2)
 
-saveRDS(model, paste0("../Results/R2GUESS/All_outcomes_f4_5_5_model_",filepaths[m],".rds"))
-saveRDS(res.g, paste0("../Results/R2GUESS/All_outcomes_f4_5_5_model_res_",filepaths[m],".rds"))
-saveRDS(beta, paste0("../Results/R2GUESS/All_outcomes_f4_5_5_model_beta_",filepaths[m],".rds"))
-
-ifelse(dir.exists("../Figures/R2GUESS/"),"",dir.create("../Figures/R2GUESS/"))
+saveRDS(model, paste0("../Results/R2GUESS/Select_outcomes_f4_5_5_model_",filepaths[m],".rds"))
+saveRDS(res.g, paste0("../Results/R2GUESS/Select_outcomes_f4_5_5_model_res_",filepaths[m],".rds"))
+saveRDS(beta, paste0("../Results/R2GUESS/Select_outcomes_f4_5_5_model_beta_",filepaths[m],".rds"))
 
 ## Diagnostic plots to assess the convergence of the algorithm
-jpeg(paste0("../Figures/R2GUESS/All_outcomes_f4_5_5_monitor_App_",filepaths[m],".jpg"), width = 20, height = 17, units = "cm", res = 300)
+jpeg(paste0("../Figures/R2GUESS/Select_outcomes_f4_5_5_monitor_App_",filepaths[m],".jpg"), width = 20, height = 17, units = "cm", res = 300)
 plot(model)
 dev.off()
 
 ## Diagnostic plots to assess the convergence of the algorithm
-pdf(paste0("../Figures/R2GUESS/All_outcomes_f4_5_5_conv1_",filepaths[m],".pdf"))
+pdf(paste0("../Figures/R2GUESS/Select_outcomes_f4_5_5_conv1_",filepaths[m],".pdf"))
 check.convergence(model, 1)
 dev.off()
 
-pdf(paste0("../Figures/R2GUESS/All_outcomes_f4_5_5_conv2_",filepaths[m],".pdf"))
+pdf(paste0("../Figures/R2GUESS/Select_outcomes_f4_5_5_conv2_",filepaths[m],".pdf"))
 check.convergence(model, 2)
 dev.off()
 
