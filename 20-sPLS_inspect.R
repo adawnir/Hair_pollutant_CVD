@@ -55,6 +55,7 @@ for (k in 1:nrow(comp)){
        labels=colnames(Y), cex=0.8,
        col=darken(outcome.colours,0.5))
 }
+dev.off()
 
 tmp = model.matrix(~ Smoking + Education + Physical_activity + Alcohol, data)[,-1]
 Z = cbind(data$Age,
@@ -93,7 +94,6 @@ for (f in c(1,3,4)){
   assign(paste0("rank_f",f), rank)
 }
 
-dev.off()
 rank_f1
 rank_f3
 rank_f4

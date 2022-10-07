@@ -21,11 +21,9 @@ model_type = regmatches(myfiles[m], regexpr("f[1-4]", myfiles[m]))
 # Confounders
 if(model_type == "f1"){
   confounder.id = 1:7
-}
-if(model_type == "f3"){
+} else if (model_type == "f3"){
   confounder.id = 1:9
-}
-if(model_type == "f4"){
+} else {
   confounder.id = 1:13
 }
 
@@ -34,8 +32,7 @@ if(data_type == "PesticidesPCBBDEs_train"){
   outcome.id = c("WC","SBP","DBP","TG","BMI","TC","LDLC")
   egam = 5
   sgam = 5
-}
-if(data_type == "PAH_train"){
+} else {
   outcome.id = c("BMI","WC","SBP","TG","HDLC")
   egam = 6
   sgam = 6
