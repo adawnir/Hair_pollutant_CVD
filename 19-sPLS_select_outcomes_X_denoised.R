@@ -37,6 +37,8 @@ f1='X[,k] ~ data$Age + data$Gender + `SmokingFormer smoker` + `SmokingCurrent sm
 f3='X[,k] ~ data$Age + data$Gender + `SmokingFormer smoker` + `SmokingCurrent smoker` + DietScore1 + DietScore2 + DietScore3 + EducationIntermediate + EducationHigh'
 f4='X[,k] ~ data$Age + data$Gender + `SmokingFormer smoker` + `SmokingCurrent smoker` + DietScore1 + DietScore2 + DietScore3 + EducationIntermediate + EducationHigh + `Physical_activityModerately active` + Physical_activityActive + AlcoholModerate + AlcoholHigh'
 
+ncomp = c(3,2)[m]
+
 for (f in c(1,3,4)){
   X_denoised=NULL
   for (k in seq(1:ncol(X))){
@@ -49,7 +51,7 @@ for (f in c(1,3,4)){
   rownames(X_denoised)=rownames(X)
   
   # sPLS: sparsity on both X and Y
-  stab = BiSelection(xdata = X_denoised, ydata = Y, family = "gaussian", ncomp = 3,
+  stab = BiSelection(xdata = X_denoised, ydata = Y, family = "gaussian", ncomp = ncomp,
                      LambdaX = 1:(ncol(X) - 1),
                      LambdaY = 1:(ncol(Y) - 1),
                      implementation = SparsePLS, n_cat = 2)
@@ -60,7 +62,7 @@ for (f in c(1,3,4)){
   CalibrationPlot(stab)
   dev.off()
   
-  pdf(paste0("../Figures/R2GUESS/sPLS_XY_f",f,"_network",filepaths[m],".pdf"))
+  pdf(paste0("../Figures/R2GUESS/sPLS_XY_f",f,"_network_",filepaths[m],".pdf"))
   plot(stab)
   dev.off()
   
