@@ -152,7 +152,7 @@ f1='X[,k] ~ data$Age + data$Gender + `SmokingFormer smoker` + `SmokingCurrent sm
 f3='X[,k] ~ data$Age + data$Gender + `SmokingFormer smoker` + `SmokingCurrent smoker` + DietScore1 + DietScore2 + DietScore3 + EducationIntermediate + EducationHigh'
 f4='X[,k] ~ data$Age + data$Gender + `SmokingFormer smoker` + `SmokingCurrent smoker` + DietScore1 + DietScore2 + DietScore3 + EducationIntermediate + EducationHigh + `Physical_activityModerately active` + Physical_activityActive + AlcoholModerate + AlcoholHigh'
 
-for (f in c(1,3,4)){
+for (f in c(1,3)){
   X_denoised=NULL
   for (k in seq(1:ncol(X))){
     print(colnames(X)[k])
@@ -177,4 +177,4 @@ for (f in c(1,3,4)){
 }
 rank_f1
 rank_f3
-rank_f4
+

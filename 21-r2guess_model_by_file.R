@@ -12,9 +12,9 @@ library(tidyverse)
 args=commandArgs(trailingOnly=TRUE)
 m=as.numeric(args[1])
 
-myfiles = list.files(path = "../Results/R2GUESS/", pattern = "sPLS_XY_f[1-4]_output_")[m]
+myfiles = list.files(path = "../Results/R2GUESS/", pattern = "sPLS_XY_f[0-9]_output_")
 
-split = gsub("sPLS_XY_f[1-4]_output_","",myfiles[m])
+split = gsub("sPLS_XY_f[0-9]_output_","",myfiles[m])
 data_type = gsub(".rds","",split)
 model_type = regmatches(myfiles[m], regexpr("f[1-4]", myfiles[m]))
 
@@ -33,7 +33,7 @@ if(data_type == "PesticidesPCBBDEs_train"){
   egam = 5
   sgam = 5
 } else {
-  outcome.id = c("BMI","WC","SBP","TG","HDLC")
+  outcome.id = c("BMI","WC","TG")
   egam = 6
   sgam = 6
 }
