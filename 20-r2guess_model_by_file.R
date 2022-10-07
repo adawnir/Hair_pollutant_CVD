@@ -29,36 +29,16 @@ if(model_type == "f4"){
   confounder.id = 1:13
 }
 
-# Priors
-if(model_type=="f1" & data_type == "PesticidesPCBBDEs_train"){
-  outcome.id = c("BMI","WC","SBP","DBP","TG","LDLC","HDLC","FPG")
+# Outcomes and priors
+if(data_type == "PesticidesPCBBDEs_train"){
+  outcome.id = c("WC","SBP","DBP","TG","BMI","TC","LDLC")
   egam = 5
   sgam = 5
 }
-if(model_type=="f3" & data_type == "PesticidesPCBBDEs_train"){
-  outcome.id = c("BMI","WC","SBP","DBP","TG","LDLC","HDLC","FPG")
-  egam = 5
-  sgam = 5
-}
-if(model_type=="f4" & data_type == "PesticidesPCBBDEs_train"){
-  outcome.id = c("BMI","WC","SBP","DBP","TG","LDLC","HDLC","FPG")
-  egam = 5
-  sgam = 5
-}
-if(model_type=="f1" & data_type == "PAH_train"){
-  outcome.id = c("BMI","WC","SBP","DBP","TG","LDLC","HDLC","FPG")
-  egam = 5
-  sgam = 5
-}
-if(model_type=="f3" & data_type == "PAH_train"){
-  outcome.id = c("BMI","WC","SBP","DBP","TG","LDLC","HDLC","FPG")
-  egam = 5
-  sgam = 5
-}
-if(model_type=="f4" & data_type == "PAH_train"){
-  outcome.id = c("BMI","WC","SBP","DBP","TG","LDLC","HDLC","FPG")
-  egam = 5
-  sgam = 5
+if(data_type == "PAH_train"){
+  outcome.id = c("BMI","WC","SBP","TG","HDLC")
+  egam = 6
+  sgam = 6
 }
 
 ifelse(dir.exists("../Results/"),"",dir.create("../Results/"))
