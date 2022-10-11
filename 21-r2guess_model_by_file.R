@@ -30,10 +30,10 @@ if(model_type == "f1"){
 # Outcomes and priors
 if(data_type == "PesticidesPCBBDEs_train"){
   outcome.id = c("WC","SBP","DBP","TG","BMI","TC","LDLC")
-  egam = 5
-  sgam = 5
+  egam = 6
+  sgam = 6
 } else {
-  outcome.id = c("BMI","WC","TG")
+  outcome.id = c("BMI","WC")
   egam = 6
   sgam = 6
 }
@@ -83,12 +83,13 @@ model = R2GUESS(Y, X, path.input, path.output,
 
 # summary(model, 100)
 
+saveRDS(model, paste0("../Results/R2GUESS/",model_type,"_model_",data_type,".rds"))
+
 set.seed(3)
 n.sweep = get.sweep.best.model(model, models = 1)
-res.g = get.g.sweep(model, n.sweep$result, 1)
+res.g = get.g.sweep(model, n.sweep$result, 1) # error
 beta = sample.beta(model, res.g, Nmonte = 4, Nmonte.sigma = 4)
 
-saveRDS(model, paste0("../Results/R2GUESS/",model_type,"_model_",data_type,".rds"))
 saveRDS(res.g, paste0("../Results/R2GUESS/",model_type,"_model_res_",data_type,".rds"))
 saveRDS(beta, paste0("../Results/R2GUESS/",model_type,"_model_beta_",data_type,".rds"))
 

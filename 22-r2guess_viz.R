@@ -12,21 +12,27 @@ source("graph_colours.R")
 library(colorspace)
 
 ## Load data
-filepaths = c("PesticidesPCBBDEs_train","PAHs_train")
-
+myfiles = list.files(path = "../Results/R2GUESS/", pattern = "f[0-9]_model_P")
 m = 1
+
+split = gsub("f[0-9]_model_","",myfiles[m])
+data_type = gsub(".rds","",split)
+model_type = regmatches(myfiles[m], regexpr("f[1-4]", myfiles[m]))
+
 data = readRDS(paste0("../Processed/Overlap_test_XY.rds"))
 
-## f1 -----
-model = readRDS("..Results/R2GUESS/Select_outcomes_f1_model_",filepaths[m],".rds")
-res.g = readRDS("..Results/R2GUESS/Select_outcomes_f1_model_res_",filepaths[m],".rds")
-beta = readRDS("..Results/R2GUESS/Select_outcomes_f1_model_beta_",filepaths[m],".rds")
+model = readRDS(paste0("../Results/R2GUESS/",myfiles[m]))
+res.g = readRDS(paste0("../Results/R2GUESS/",gsub("model","model_res",myfiles[m])))
+beta = readRDS(paste0("../Results/R2GUESS/",gsub("model","model_beta",myfiles[m])))
 
 annot = readRDS("../Data/Compound_family_annotation.rds")
+
+X = readRDS(paste0("../Processed/",data_type,"_XY.rds"))
+X = X[,27:ncol(X)]
 annot_sub = annot[colnames(X)]
 
 ## MPPI plots
-pdf(paste0("../Figures/R2GUESS/Selected_outcomes_f1_MPPI_",filepaths[m],".pdf"), width = 9, height = 5)
+pdf(paste0("../Figures/R2GUESS/",model_type,"_MPPI_",data_type,".pdf"), width = 9, height = 5)
 par(mar=c(5,5,5,10))
 plotMPPI(model, threshold.model = 100, cutoff = FALSE)
 legend("topright",
