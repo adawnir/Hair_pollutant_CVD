@@ -19,17 +19,19 @@ split = gsub("f[0-9]_model_","",myfiles[m])
 data_type = gsub(".rds","",split)
 model_type = regmatches(myfiles[m], regexpr("f[1-4]", myfiles[m]))
 
-data = readRDS(paste0("../Processed/Overlap_test_XY.rds"))
-
 model = readRDS(paste0("../Results/R2GUESS/",myfiles[m]))
 res.g = readRDS(paste0("../Results/R2GUESS/",gsub("model","model_res",myfiles[m])))
 beta = readRDS(paste0("../Results/R2GUESS/",gsub("model","model_beta",myfiles[m])))
 
+## Visualisation ----
 annot = readRDS("../Data/Compound_family_annotation.rds")
-
 X = readRDS(paste0("../Processed/",data_type,"_XY.rds"))
 X = X[,27:ncol(X)]
 annot_sub = annot[colnames(X)]
+
+# Extract MPPI
+NameMarg = file.path(model$path.output, paste(model$root.file.output,"output_marg_prob_incl.txt",sep="_"))
+Marg  = read.table(NameMarg,header=TRUE)
 
 ## MPPI plots
 pdf(paste0("../Figures/R2GUESS/",model_type,"_MPPI_",data_type,".pdf"), width = 9, height = 5)
@@ -37,31 +39,34 @@ par(mar=c(5,5,5,10))
 plotMPPI(model, threshold.model = 100, cutoff = FALSE)
 legend("topright",
        inset = c(-0.25,0),
-       legend = paste0(as.numeric(res.g$predictors),". ",
-                       colnames(X)[as.numeric(res.g$predictors)]),
-       text.col = darken(annot.colours[annot_sub[as.numeric(res.g$predictors)]],0.5),
+       legend = paste0(which(Marg$Marg_Prob_Incl > 0.01),". ",
+                       colnames(X)[Marg$Marg_Prob_Incl > 0.01]),
+       text.col = darken(annot.colours[annot_sub[which(Marg$Marg_Prob_Incl > 0.01)]],0.5),
        xpd = NA, x.intersp = 0, bty = "n")
 dev.off()
 
 ## Boxplots summarising the posterior distribution of the
 ## regression coefficients for selected variables
 ## Blue crosses represent the true value used in the simulation.
-pdf(paste0("../Figures/R2GUESS/Selected_outcomes_f1_Estimated_beta_",filepaths[m],".pdf"), width = 9, height = 5)
+pdf(paste0("../Figures/R2GUESS/",model_type,"_Estimated_beta_",data_type,".pdf"), width = 9, height = 5)
 for(i in 1:length(res.g$predictors)){
-  res.boxplot = boxplotbeta(model, beta, variable = res.g$predictors)
+  res.boxplot = boxplotbeta(model, beta, variable = res.g$predictors[i])
 }
 dev.off()
 
+write.table(colnames(X), paste0(model$path.input,"/X.annotation.txt"))
+
 ## Figure 14-(a): variables included in the best models
-pdf(paste0("../Figures/R2GUESS/Selected_outcomes_f1_Variables_included_top20_models_",filepaths[m],".pdf"))
-plotvariable(model, 20)
+pdf(paste0("../Figures/R2GUESS/",model_type,"_Variables_included_top20_models_",data_type,".pdf"))
+plotvariable(model, 20, file.annotation = paste0(model$path.input,"/X.annotation.txt"))
 dev.off()
 ## Figure 14-(b): proximity between the best models
-pdf(paste0("../Figures/R2GUESS/Selected_outcomes_f1_Proximity_between_top20_models_",filepaths[m],".pdf"))
+pdf(paste0("../Figures/R2GUESS/",model_type,"_Proximity_between_top20_models_",data_type,".pdf"))
 plotmodel(model, 20)
 dev.off()
 
-as.numeric(res.g$predictors)
+## Recalibration ----
+data = readRDS(paste0("../Processed/Overlap_test_XY.rds"))
 
 Y_test = data[,c(17,19,20,22:25)] # remove WC and TC
 
