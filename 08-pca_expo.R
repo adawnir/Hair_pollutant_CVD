@@ -17,21 +17,22 @@ annot = readRDS("../Data/Compound_family_annotation.rds")
 filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 for (i in 1:3){
   # Load data
-  data = readRDS(paste0("../Processed/",filepaths[i],"_info_expo_ndimp_naimp_log.rds"))
-  expo = data[,34:ncol(data)]
+  expo = readRDS(paste0("../Processed/",filepaths[i],"_expo_ndimp_naimp_log.rds"))
   print(ncol(expo))
+  covar = readRDS(paste0("../Data/",filepaths[i],"_covar.rds"))
   
   mypca=PCA(expo, graph = FALSE)
   ev=mypca$eig[,2]
   
-  CreateScorePlot(mypca=mypca, type=as.character(data$Country),
-                  mycolours=country.colours[levels(data$Country)],
+  CreateScorePlot(mypca=mypca, type=as.character(covar$Country),
+                  mycolours=country.colours[levels(covar$Country)],
                   filename=paste0("../Figures/Descriptive_statistics/PCA_score_plot_by_Country_",filepaths[i],".pdf"),
                   ellipse = TRUE)
-  # CreateScorePlot(mypca=mypca, type=as.character(data$Gender),
-  #                 mycolours=gender.colours[levels(data$Gender)],
-  #                 filename=paste0("../Figures/PCA_score_plot_by_Gender_",filepaths[i],".pdf"),
-  #                 ellipse = TRUE)
+  CreateScorePlot(mypca=mypca, type=as.character(covar$Gender),
+                  mycolours=gender.colours[levels(covar$Gender)],
+                  filename=paste0("../Figures/Descriptive_statistics/PCA_score_plot_by_Gender_",filepaths[i],".pdf"),
+                  ellipse = TRUE)
+  
   # mycor=cor(expo, mypca$ind$coord)
   # 
   # annot_sub = annot[colnames(expo)]

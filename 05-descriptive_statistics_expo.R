@@ -9,19 +9,12 @@ library(tidyverse)
 library(colorspace)
 
 ## Save chemical family annotation as named list----
-pest = readRDS("../Data/PesticidesPCBBDEs.rds")
-pahs = readRDS("../Data/PAHs.rds")
-
-pest_expo = pest[,33:ncol(pest)]
-pahs_expo = pahs[,33:ncol(pahs)]
-
-## Chemical family annotation ----
-chem_family = c("PCBs","PBDEs","Organochlorine","Organophosphate","Pyrethroids",
-                "Phenylpyrazoles","Carbomates","Carboxamides","Dinitroanilines",
-                "Oxadiazines","Tobacco-related","PAH metabolites")
-annot = rep(chem_family,c(3,1,9,9,4,2,2,1,1,1,2,ncol(pahs_expo)-2))
-names(annot) = c(colnames(pest_expo),colnames(pahs_expo))
-saveRDS(annot, "../Data/Compound_family_annotation.rds")
+# chem_family = c("PCBs","PBDEs","Organochlorine","Organophosphate","Pyrethroids",
+#                 "Phenylpyrazoles","Carbomates","Carboxamides","Dinitroanilines",
+#                 "Oxadiazines","Tobacco-related","PAH metabolites")
+# annot = rep(chem_family,c(3,1,9,9,4,2,2,1,1,1,2,ncol(pahs_expo)-2))
+# names(annot) = c(colnames(pest_expo),colnames(pahs_expo))
+# saveRDS(annot, "../Data/Compound_family_annotation.rds")
 
 ## LOD, proportion detected, and concentration range and proportion missing ----
 
@@ -29,7 +22,7 @@ filepaths = c("PesticidesPCBBDEs","PAHs")
 annot = readRDS("../Data/Compound_family_annotation.rds")
 
 for (i in 1:2){
-  expo = readRDS(paste0("../Processed/",filepaths[i],"_ndimp.rds"))
+  expo = readRDS(paste0("../Processed/",filepaths[i],"_expo_ndimp.rds"))
   info = readRDS(paste0("../Processed/",filepaths[i],"_info.rds"))
   annot_sub = annot[colnames(expo)]
   all(colnames(expo) == rownames(info))
@@ -54,41 +47,15 @@ for (i in 1:2){
   SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/Descriptive_statistics/",filepaths[i],"_exposure_summary.xlsx"))
 }
 
-## Comparing exposures between populations (Pesticides and POPs): by data_type ----
+## Comparing exposures between populations: by data_type ----
 annot = readRDS("../Data/Compound_family_annotation.rds")
 
-{
-  data1 = readRDS(paste0("../Processed/","PesticidesPCBBDEs_train_info_expo_ndimp_naimp_log",".rds"))
-  data2 = readRDS(paste0("../Processed/","Overlap_test_info_expo_ndimp_naimp_log",".rds"))
-  expo = rbind(data1[,34:ncol(data1)],data2[,34:66])
-  data_type = factor(c(data1$data_type,data2$data_type), labels = c("Train","Test"))
-
-  annot_sub = annot[colnames(expo)]
-
-  mytable=NULL
-  for (k in 1:length(colnames(expo))){
-    print(colnames(expo)[k])
-    tmp=ContinuousTest(x=expo[,k], y=data_type)
-    if(!duplicated(annot_sub)[k]){
-      mytable=rbind(mytable, rep(NA,length(tmp)))
-      rownames(mytable)[nrow(mytable)]=as.character(annot_sub[k])
-    }
-    mytable=rbind(mytable, tmp)
-    rownames(mytable)[nrow(mytable)]=colnames(expo)[k]
-  }
-  colnames(mytable)=c(paste0(levels(data_type),", Mean (sd)"),"P-value")
-  # mytable=ReformatScientificNotation(mytable)
-  SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/Descriptive_statistics/Compare_mean_exposure_by_data_type_PesticidesPCBBDEs.xlsx"))
-}
-
-## Comparing exposures between populations (Tobacco-related and PAHs): by data_type ----
-annot = readRDS("../Data/Compound_family_annotation.rds")
-
-{
-  data1 = readRDS(paste0("../Processed/","PAHs_train_info_expo_ndimp_naimp_log",".rds"))
-  data2 = readRDS(paste0("../Processed/","Overlap_test_info_expo_ndimp_naimp_log",".rds"))
-  expo = rbind(data1[,34:ncol(data1)],data2[,67:ncol(data2)])
-  data_type = factor(c(data1$data_type,data2$data_type), labels = c("Train","Test"))
+filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
+for (m in 1:2){
+  data1 = readRDS(paste0("../Processed/",filepaths[m],"_expo_ndimp_naimp_log",".rds"))
+  data2 = readRDS(paste0("../Processed/",filepaths[3],"_expo_ndimp_naimp_log",".rds"))
+  expo = rbind(data1,data2[,colnames(data1)])
+  data_type = factor(rep(c(0,1),c(nrow(data1), nrow(data2))), labels = c("Train","Test"))
   
   annot_sub = annot[colnames(expo)]
   
@@ -105,17 +72,21 @@ annot = readRDS("../Data/Compound_family_annotation.rds")
   }
   colnames(mytable)=c(paste0(levels(data_type),", Mean (sd)"),"P-value")
   # mytable=ReformatScientificNotation(mytable)
-  SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/Descriptive_statistics/Compare_mean_exposure_by_data_type_PAHs.xlsx"))
+  SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/Descriptive_statistics/Compare_mean_exposure_by_data_type_",gsub("_train","",filepaths[m]),".xlsx"))
 }
 
-## Comparing exposures between populations (Pesticides and POPs): by Country ----
+## Comparing exposures between populations: by Country ----
 annot = readRDS("../Data/Compound_family_annotation.rds")
 
-{
-  data1 = readRDS(paste0("../Processed/","PesticidesPCBBDEs_train_info_expo_ndimp_naimp_log",".rds"))
-  data2 = readRDS(paste0("../Processed/","Overlap_test_info_expo_ndimp_naimp_log",".rds"))
-  expo = rbind(data1[,34:ncol(data1)],data2[,34:66])
-  Country = factor(c(data1$Country,data2$Country), labels = c("Belgium","Luxembourg"))
+filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
+for (m in 1:2){
+  data1 = readRDS(paste0("../Processed/",filepaths[m],"_expo_ndimp_naimp_log",".rds"))
+  data2 = readRDS(paste0("../Processed/",filepaths[3],"_expo_ndimp_naimp_log",".rds"))
+  expo = rbind(data1,data2[,colnames(data1)])
+  
+  data1 = readRDS(paste0("../Data/",filepaths[m],"_covar",".rds"))
+  data2 = readRDS(paste0("../Data/",filepaths[3],"_covar",".rds"))
+  Country = factor(c(data1$Country, data2$Country), labels = levels(data1$Country))
   
   annot_sub = annot[colnames(expo)]
   
@@ -132,24 +103,28 @@ annot = readRDS("../Data/Compound_family_annotation.rds")
   }
   colnames(mytable)=c(paste0(levels(Country),", Mean (sd)"),"P-value")
   # mytable=ReformatScientificNotation(mytable)
-  SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/Descriptive_statistics/Compare_mean_exposure_by_Country_PesticidesPCBBDEs.xlsx"))
+  SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/Descriptive_statistics/Compare_mean_exposure_by_Country_",gsub("_train","",filepaths[m]),".xlsx"))
 }
 
-## Comparing exposures between populations (Tobacco-related and PAHs): by Country ----
+## Comparing exposures between populations: by Gender ----
 annot = readRDS("../Data/Compound_family_annotation.rds")
 
-{
-  data1 = readRDS(paste0("../Processed/","PAHs_train_info_expo_ndimp_naimp_log",".rds"))
-  data2 = readRDS(paste0("../Processed/","Overlap_test_info_expo_ndimp_naimp_log",".rds"))
-  expo = rbind(data1[,34:ncol(data1)],data2[,67:ncol(data2)])
-  Country = factor(c(data1$Country,data2$Country), labels = c("Belgium","Luxembourg"))
+filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
+for (m in 1:2){
+  data1 = readRDS(paste0("../Processed/",filepaths[m],"_expo_ndimp_naimp_log",".rds"))
+  data2 = readRDS(paste0("../Processed/",filepaths[3],"_expo_ndimp_naimp_log",".rds"))
+  expo = rbind(data1,data2[,colnames(data1)])
+  
+  data1 = readRDS(paste0("../Data/",filepaths[m],"_covar",".rds"))
+  data2 = readRDS(paste0("../Data/",filepaths[3],"_covar",".rds"))
+  Gender = factor(c(data1$Gender, data2$Gender), labels = levels(data1$Gender))
   
   annot_sub = annot[colnames(expo)]
   
   mytable=NULL
   for (k in 1:length(colnames(expo))){
     print(colnames(expo)[k])
-    tmp=ContinuousTest(x=expo[,k], y=Country)
+    tmp=ContinuousTest(x=expo[,k], y=Gender)
     if(!duplicated(annot_sub)[k]){
       mytable=rbind(mytable, rep(NA,length(tmp)))
       rownames(mytable)[nrow(mytable)]=as.character(annot_sub[k])
@@ -157,9 +132,9 @@ annot = readRDS("../Data/Compound_family_annotation.rds")
     mytable=rbind(mytable, tmp)
     rownames(mytable)[nrow(mytable)]=colnames(expo)[k]
   }
-  colnames(mytable)=c(paste0(levels(Country),", Mean (sd)"),"P-value")
+  colnames(mytable)=c(paste0(levels(Gender),", Mean (sd)"),"P-value")
   # mytable=ReformatScientificNotation(mytable)
-  SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/Descriptive_statistics/Compare_mean_exposure_by_Country_PAHs.xlsx"))
+  SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/Descriptive_statistics/Compare_mean_exposure_by_Gender_",gsub("_train","",filepaths[m]),".xlsx"))
 }
 
 

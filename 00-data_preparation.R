@@ -4,329 +4,241 @@ rm(list=ls())
 project_path=dirname(rstudioapi::getActiveDocumentContext()$path)
 setwd(project_path)
 
+source("functions.R")
 library(tidyverse)
 library(readxl)
-library(colorspace)
 
-### Pesticides and POPs ----
-## Extract exposure matrices
-data = read_excel("../Data/Dataset_Pesticides_PAHs_05242022.xlsx", sheet = 1)
-str(data)
-colnames(data)[38:70] = readLines("../Dictionaries/PesticidesPCBBDEs_names.txt")
-pest = as.data.frame(data)
-rownames(pest) = pest$identifiant
-dim(pest)    # 989   70
+ifelse(dir.exists("../Processed/"), "", dir.create("../Processed/"))
 
-# Subset relevant columns
-pest = pest[,-which(colnames(pest) %in% c("Fasting","LDLC_HDLC","MetS_WC","MetS_TG","MetS_HDLC",
-                                          "MetS_BP","MetS_FPG"))]
+## Data cleaning ----
+filepaths = c("PesticidesPCBBDEs","PAHs")
+for (m in 1:2){
+  data = read_excel("../Data/Dataset_Pesticides_PAHs_05242022.xlsx", sheet = m)
+  str(data)
+  dim(data)
+  colnames(data)[38:ncol(data)] = readLines(paste0("../Dictionaries/",filepaths[m],"_names.txt"))
+  newdata = as.data.frame(data)
+  rownames(newdata) = newdata$identifiant
+  dim(newdata)
+  colnames(newdata)
+  
+  # Check if all participants are Fasting
+  newdata %>% filter(Fasting==0) %>% nrow
+  # Check for participants missing >50% diet information
+  remove = newdata %>% select(Energy, Proteins, Fats, Carbohydrates, Fibers) %>%
+    .[rowSums(is.na(.))/ncol(.) > 0.5,] %>% rownames
+  print(paste0("Removing ",length(remove)," participants missing >50% diet information"))
+  newdata = newdata[-which(rownames(newdata) %in% remove),]
+  
+  # Check for participants missing >50% covariate information
+  newdata %>% select(Age, Gender, Smoking,
+                      Energy, Proteins, Fats, Carbohydrates, Fibers,
+                      Education, Physical_activity, Alcohol) %>%
+    .[rowSums(is.na(.))/ncol(.) > 0.5,] %>% nrow
+  
+  # Rename columns
+  newdata = newdata %>% rename(ID = "identifiant",
+                                 Diabetes_medication = "Diabetic_MD",
+                                 Hypertension_medication = "Antihypertensive_MD",
+                                 Lipid_medication = "Lipid_MD")
+  
+  newdata = newdata %>% mutate_at(vars(ends_with("_medication")),
+                                  function(x) factor(x, 0:1, labels = c("No","Yes")))
+  
+  # Covariate transformation
+  table(newdata$Country)
+  newdata$Country = factor(newdata$Country)
+  
+  table(newdata$Gender)
+  newdata$Gender = factor(ifelse(newdata$Gender=="F", "Female", "Male"))
+  newdata$Gender = relevel(newdata$Gender, "Male") # Male as reference
+  
+  table(newdata$Smoking)
+  newdata$Smoking = factor(newdata$Smoking, 1:3, labels = c("Never smoker","Former smoker","Current smoker"))
+  
+  table(newdata$Physical_activity)
+  newdata$Physical_activity = factor(newdata$Physical_activity, 1:3, labels = c("Inactive","Moderately active","Active"))
+  
+  table(newdata$Alcohol)
+  newdata$Alcohol = factor(newdata$Alcohol, 1:3, labels = c("Low","Moderate","High"))
+  
+  table(newdata$Education)
+  newdata$Education = factor(newdata$Education, 1:3, labels = c("Low","Intermediate","High"))
+  
+  # Outcome ascertainment
+  # Categorise BMI
+  newdata$BMI_cat = ifelse(newdata$BMI <18.5,"Underweight",
+                            ifelse(newdata$BMI >=18.5 & newdata$BMI <25, "Normal",
+                                   ifelse(newdata$BMI >=25 & newdata$BMI <30, "Pre-obesity",
+                                          ifelse(newdata$BMI >=30 & newdata$BMI <35, "Obesity class I",
+                                                 ifelse(newdata$BMI >=35 & newdata$BMI <40, "Obesity class II",
+                                                        "Obesity class III")))))
+  newdata$BMI_cat = factor(newdata$BMI_cat,
+                           levels = c("Normal","Underweight","Pre-obesity",
+                                      "Obesity class I","Obesity class II",
+                                      "Obesity class III"))
+  
+  # Dichotomous WC
+  newdata = newdata %>% mutate(WC_cat =  factor(ifelse(newdata$WC >=102 & newdata$Gender == "Male", 1,
+                                                       ifelse(newdata$WC >=88 & newdata$Gender == "Female", 1, 0)),
+                                                labels = c("Normal","High")))
 
-str(pest)
-colnames(pest)[1] = "ID"
-colnames(pest)[23:25] = c("Diabetes_medication","Hypertension_medication","Lipid_disorder_medication")
-colnames(pest)[29:30] = c("Lipid_disorder","Metabolic_syndrome")
+  # Dichotomous TG
+  newdata = newdata %>% mutate(TG_cat = factor(ifelse(newdata$TG >= 150, 1, 0), labels = c("Normal","High")))
+  newdata$TG_cat = factor(newdata$TG_cat)
+  
+  # Subset relevant columns
+  expo = colnames(data)[38:ncol(data)]
+  expo = newdata %>% select(all_of(expo))
+  
+  covar = newdata %>% select(Country, Age, Education, Gender, Smoking,
+                             Energy, Proteins, Fats, Carbohydrates, Fibers,
+                             Physical_activity, Alcohol)
+  response = newdata %>% select(BMI, WC, TG, TC, LDLC, HDLC, SBP, DBP, FPG,
+                                BMI_cat, WC_cat, TG_cat, ends_with("_medication"),
+                                Obesity, Dyslipidemia, Hypertension, Diabetes)
+  all(rownames(expo) == rownames(covar))
+  all(rownames(covar) == rownames(response))
+  
+  ifelse(dir.exists("../Exports/"), "", dir.create("../Exports/"))
+  ifelse(dir.exists("../Exports/Data/"), "", dir.create("../Exports/Data/"))
+  saveRDS(expo, paste0("../Data/",filepaths[m],"_expo.rds"))
+  write.csv(expo, paste0("../Exports/Data/",filepaths[m],"_expo.csv"))
+  saveRDS(covar, paste0("../Data/",filepaths[m],"_covar.rds"))
+  write.csv(covar, paste0("../Exports/Data/",filepaths[m],"_covar.csv"))
+  saveRDS(response, paste0("../Data/",filepaths[m],"_response.rds"))
+  write.csv(response, paste0("../Exports/Data/",filepaths[m],"_response.csv"))
+  
+  ### Proportion of NAs per chemical compounds ----
+  naprop = apply(expo, 2, function(x) sum(is.na(x))/nrow(expo))
+  prop = sort(naprop, decreasing = TRUE)
+  
+  pdf(paste0("../Figures/Descriptive_statistics/Missing_prop_",filepaths[m],".pdf"), width = 9, height = 4.75)
+  par(mar=c(9,5,2,1))
+  plot(prop, type = "h", ylab="Proportion missing", xlab="", xaxt = "n", lwd=1, ylim = c(0,1),
+       col=ifelse(prop>=0.5, yes="tomato", no="black"), cex.lab=1.5)
+  abline(h=0.5, lty=2, col="darkred", lwd = 1)
+  for (i in 1:length(prop)){
+    axis(side=1, at=i, labels=names(prop)[i], las=2,
+         col=ifelse(prop[i]>=0.5, yes="tomato", no="black"),
+         col.axis=ifelse(prop[i]>=0.5, yes="tomato", no="black"))
+  }
+  dev.off()
+  
+  ### Proportion of NAs per participant ----
+  summary(apply(expo, 1, function(x) sum(is.na(x))/ncol(expo)))
 
-# Set classes for variables
-class(pest$ID)
+  ## Proportion of detected per chemical compounds ----
+  ndprop = apply(expo, 2, function(x) sum(x=="nd", na.rm = TRUE)/nrow(expo))
+  prop =sort(1-(ndprop+naprop), decreasing = TRUE)
+  
+  pdf(paste0("../Figures/Descriptive_statistics/Detection_prop_",filepaths[m],".pdf"), width = 9, height = 4.75)
+  par(mar=c(9,5,2,1))
+  plot(prop, type = "h", ylab="Proportion detected", xlab="", xaxt = "n", lwd=1, ylim = c(0,1),
+       col=ifelse(prop<=0.1, yes="tomato", no="black"), cex.lab=1.5)
+  abline(h=0.1, lty=2, col="darkred", lwd = 1)
+  for (i in 1:length(prop)){
+    axis(side=1, at=i, labels=names(prop)[i], las=2,
+         col=ifelse(prop[i]<=0.1, yes="tomato", no="black"),
+         col.axis=ifelse(prop[i]<=0.1, yes="tomato", no="black"))
+  }
+  dev.off()
+  
+  ### Proportion detected per participant ----
+  summary(1-(apply(expo, 1, function(x) sum(x=="nd", na.rm = TRUE)/ncol(expo))+
+               apply(expo, 1, function(x) sum(is.na(x))/ncol(expo))))
+  
+  ### Recoding nd ----
+  # Extract LOD
+  lod = apply(expo, 2,function(x) suppressWarnings(min(as.numeric(unlist(x)), na.rm = T)))
+  
+  # Save exposure information
+  info = data.frame(lod = lod, ndprop = ndprop, naprop = naprop,row.names = colnames(expo))
+  
+  saveRDS(info, paste0("../Processed/",filepaths[m],"_info.rds"))
+  
+  ### Replace nd with random values from 0 to minimum detection (Gaussian)
+  for(k in 1:ncol(expo)){
+    expo[which(expo[,k]=="nd"),k] = rtruncnorm(sum(expo[,k]=="nd", na.rm = T),min=0,max=lod[k]) 
+  }
+  expo_ndimp = apply(expo, 2, as.numeric)
+  rownames(expo_ndimp) = rownames(expo)
+  summary(expo_ndimp)
+  
+  saveRDS(expo_ndimp, paste0("../Processed/",filepaths[m],"_expo_ndimp.rds"))
+  write.csv(expo_ndimp, paste0("../Exports/Data/",filepaths[m],"_expo_ndimp.csv"))
+}
 
-table(pest$Country)
-pest$Country = factor(pest$Country)
-class(pest$Country)
-
-table(pest$Gender)
-pest$Gender = factor(ifelse(pest$Gender=="F", "Female", "Male"))
-class(pest$Gender)
-pest$Gender = relevel(pest$Gender, "Male")
-
-table(pest$Smoking)
-pest$Smoking = factor(pest$Smoking, 1:3, labels = c("Never smoker","Former smoker","Current smoker"))
-
-table(pest$Physical_activity)
-pest$Physical_activity = factor(pest$Physical_activity, 1:3, labels = c("Inactive","Moderately active","Active"))
-
-table(pest$Alcohol)
-pest$Alcohol = factor(pest$Alcohol, 1:3, labels = c("Low","Moderate","High"))
-
-table(pest$Education)
-pest$Education = factor(pest$Education, 1:3, labels = c("Low","Intermediate","High"))
-
-str(pest)
-
-## Exclude participants with >50% nutrient information missing
-hist(rowSums(is.na(pest[10:14]))/5)
-pest = pest[rowSums(is.na(pest[10:14]))/5 < 0.5,]
-hist(rowSums(is.na(pest[6:14]))/9)
-
-## Covariate transformation
-summary(pest$BMI)
-pest$BMI_cat = ifelse(pest$BMI <18.5,"Underweight",
-                      ifelse(pest$BMI >=18.5 & pest$BMI <25, "Normal",
-                             ifelse(pest$BMI >=25 & pest$BMI <30, "Pre-obesity",
-                                    ifelse(pest$BMI >=30 & pest$BMI <35, "Obesity class I",
-                                           ifelse(pest$BMI >=35 & pest$BMI <40, "Obesity class II",
-                                                  "Obesity class III")))))
-table(pest$BMI_cat)
-pest$BMI_cat = factor(pest$BMI_cat)
-class(pest$BMI_cat)
-
-### WC
-summary(pest$WC)
-pest$WC_cat = ifelse(pest$WC >=102 & pest$Gender == "Male", "High",
-                     ifelse(pest$WC >=88 & pest$Gender == "Female", "High","Normal"))
-table(pest$WC_cat)
-pest$WC_cat = factor(pest$WC_cat)
-class(pest$WC_cat)
-
-### Medication
-pest$Diabetes_medication = factor(pest$Diabetes_medication)
-pest$Hypertension_medication = factor(pest$Hypertension_medication)
-pest$Lipid_disorder_medication = factor(pest$Lipid_disorder_medication)
-
-pest = pest %>% mutate_at(vars(ends_with("_medication")),
-                          function(x) factor(x, 0:1, labels = c("No","Yes")))
-
-## Outcome ascertainment
-# Obesity
-# pest$Obesity = ifelse(pest$BMI <30, "No","Yes")
-table(pest$Obesity)
-pest$Obesity = factor(pest$Obesity, 0:1, labels = c("No","Yes"))
-class(pest$Obesity)
-
-# Hypertension
-summary(pest$SBP)
-summary(pest$DBP)
-# pest$Hypertension = ifelse(pest$SysBP < 140 & pest$DiaBP < 90 & pest$Hypertension_medication == 01", "No","Yes")
-table(pest$Hypertension)
-pest$Hypertension = factor(pest$Hypertension, 0:1, labels = c("No","Yes"))
-class(pest$Hypertension)
-
-# Diabetes
-summary(pest$FPG)
-# pest$Diabetes = ifelse(pest$FPG < 126 & pest$Diabetes_medication == "0", "No","Yes")
-table(pest$Diabetes)
-pest$Diabetes = factor(pest$Diabetes, 0:1, labels = c("No","Yes"))
-class(pest$Diabetes)
-
-# Lipid disorder
-# TC (total cholesterol) >= 190 mg/dl, TG (triglycerides) >= 150 mg/dl, 
-# LDL-C ≥ 115 mg/dl, and HDLC < 40 mg/dl for men and < 46 mg/dl for women
-# pest$Lipid_disorder = ifelse(pest$TC <190 & pest$TG <150 & pest$LDLC <115 & pest$HDLC >=40 & pest$Lipid_disorder_medication == "0" & pest$Gender == "Male", "No",
-#                              ifelse(pest$TC <190 & pest$TG <150 & pest$LDLC <115 & pest$HDLC>=46 & pest$Lipid_disorder_medication == "0" & pest$Gender == "Female", "No",
-#                                     "Yes"))
-table(pest$Lipid_disorder)
-pest$Lipid_disorder = factor(pest$Lipid_disorder, 0:1, labels = c("No","Yes"))
-class(pest$Lipid_disorder)
-
-# Metabolic syndrome
-# 1) WC ≥ 102 cm for men and ≥ 88 cm for women;
-# 2) raised concentration of TG ≥ 150 mg/dl 
-# 3) reduced concentration of HDL-C < 40 mg/dl for men and < 50 mg/dl for women 
-# 4) SBP was ≥ 130 mmHg, or DBP ≥ 85 mmHg;
-# 5) FPG level ≥100 mg/dl
-
-score = ifelse(pest$WC_cat=="High", 1, 0)
-score = score + ifelse(pest$TG >=150 | pest$Lipid_disorder_medication == "1", 1, 0)
-score = score + ifelse(pest$Lipid_disorder_medication == "1", 1,
-                       ifelse(pest$HDLC <40 & pest$Gender == "Male", 1,
-                              ifelse(pest$HDLC <50 & pest$Gender == "Female", 1, 0)))
-score = score + ifelse(pest$SBP >=130 | pest$DBP >=85  | pest$Hypertension_medication == "1", 1, 0)
-score = score + ifelse(pest$FPG >=100 | pest$Diabetes_medication == "1", 1, 0)
-table(score)
-
-pest$Metabolic_syndrome = ifelse(score>=3, "Yes", "No")
-table(pest$Metabolic_syndrome)
-pest$Metabolic_syndrome = factor(pest$Metabolic_syndrome)
-class(pest$Metabolic_syndrome)
-
-# Reorder columns
-colnames(pest)
-
-pest = cbind(pest[,c(1:30,ncol(pest)-1,ncol(pest))], pest[,c(33:ncol(pest)-2)])
-
-ifelse(dir.exists("../Exports/"), "", dir.create("../Exports/"))
-ifelse(dir.exists("../Exports/Data/"), "", dir.create("../Exports/Data/"))
-saveRDS(pest, "../Data/PesticidesPCBBDEs.rds")
-write.csv(pest, "../Exports/Data/PesticidesPCBBDEs.csv")
-
-### PAHs ----
-## Extract exposure matrices
-data = read_excel("../Data/Dataset_Pesticides_PAHs_05242022.xlsx", sheet = 2)
-str(data)
-colnames(data)[38:50] = readLines("../Dictionaries/PAHs_names.txt")
-pahs = as.data.frame(data)
-rownames(pahs) = pahs$identifiant
-dim(pahs)    # 670   50
-
-# Subset relevant columns
-pahs = pahs[,-which(colnames(pahs) %in% c("Fasting","LDLC_HDLC",
-                                          "MetS_WC","MetS_TG","MetS_HDLC",
-                                          "MetS_BP","MetS_FPG"))]
-
-str(pahs)
-colnames(pahs)[1] = "ID"
-colnames(pahs)[23:25] = c("Diabetes_medication","Hypertension_medication","Lipid_disorder_medication")
-colnames(pahs)[29:30] = c("Lipid_disorder","Metabolic_syndrome")
-
-# Set classes for variables
-class(pahs$ID)
-
-table(pahs$Country)
-pahs$Country = factor(pahs$Country)
-class(pahs$Country)
-
-table(pahs$Gender)
-pahs$Gender = factor(ifelse(pahs$Gender=="F", "Female", "Male"))
-class(pahs$Gender)
-pahs$Gender = relevel(pahs$Gender, "Male")
-
-table(pahs$Smoking)
-pahs$Smoking = factor(pahs$Smoking, 1:3, labels = c("Never smoker","Former smoker","Current smoker"))
-
-table(pahs$Physical_activity)
-pahs$Physical_activity = factor(pahs$Physical_activity, 1:3, labels = c("Inactive","Moderately active","Active"))
-
-table(pahs$Alcohol)
-pahs$Alcohol = factor(pahs$Alcohol, 1:3, labels = c("Low","Moderate","High"))
-
-table(pahs$Education)
-pahs$Education = factor(pahs$Education, 1:3, labels = c("Low","Intermediate","High"))
-
-str(pahs)
-
-## Exclude participants with >50% nutrient information missing
-hist(rowSums(is.na(pest[10:14]))/5)
-pahs = pahs[rowSums(is.na(pahs[10:14]))/5 < 0.5,]
-hist(rowSums(is.na(pest[6:14]))/9)
-
-## Covariate transformation
-# BMI
-summary(pahs$BMI)
-pahs$BMI_cat = ifelse(pahs$BMI <18.5,"Underweight",
-                      ifelse(pahs$BMI >=18.5 & pahs$BMI <25, "Normal",
-                             ifelse(pahs$BMI >=25 & pahs$BMI <30, "Pre-obesity",
-                                    ifelse(pahs$BMI >=30 & pahs$BMI <35, "Obesity class I",
-                                           ifelse(pahs$BMI >=35 & pahs$BMI <40, "Obesity class II",
-                                                  "Obesity class III")))))
-table(pahs$BMI_cat)
-pahs$BMI_cat = factor(pahs$BMI_cat)
-class(pahs$BMI_cat)
-
-# WC
-summary(pahs$WC)
-pahs$WC_cat = ifelse(pahs$WC <102 & pahs$Gender == "Male", "Normal",
-                     ifelse(pahs$WC >=102 & pahs$Gender == "Male", "High",
-                            ifelse(pahs$WC <88 & pahs$Gender == "Female", "Normal",
-                                   "High")))
-table(pahs$WC_cat)
-pahs$WC_cat = factor(pahs$WC_cat)
-class(pahs$WC_cat)
-
-# Medication
-pahs$Diabetes_medication = factor(pahs$Diabetes_medication)
-pahs$Hypertension_medication = factor(pahs$Hypertension_medication)
-pahs$Lipid_disorder_medication = factor(pahs$Lipid_disorder_medication)
-
-pahs = pahs %>% mutate_at(vars(ends_with("_medication")),
-                          function(x) factor(x, 0:1, labels = c("No","Yes")))
-
-## Outcome ascertainment
-# Obesity
-# pahs$Obesity = ifelse(pahs$BMI <30, "No","Yes")
-table(pahs$Obesity)
-pahs$Obesity = factor(pahs$Obesity, 0:1, labels = c("No","Yes"))
-class(pahs$Obesity)
-
-# Hypertension
-summary(pahs$SBP)
-summary(pahs$DBP)
-# pahs$Hypertension = ifelse(pahs$SysBP < 140 & pahs$DiaBP < 90 & pahs$Hypertension_medication == "0", "No","Yes")
-table(pahs$Hypertension)
-pahs$Hypertension = factor(pahs$Hypertension, 0:1, labels = c("No","Yes"))
-class(pahs$Hypertension)
-
-# Diabetes
-summary(pahs$FPG)
-# pahs$Diabetes = ifelse(pahs$FPG < 126 & pahs$Diabetes_medication == "0", "No","Yes")
-table(pahs$Diabetes)
-pahs$Diabetes = factor(pahs$Diabetes, 0:1, labels = c("No","Yes"))
-class(pahs$Diabetes)
-
-# Lipid disorder
-# TC (total cholesterol) >= 190 mg/dl, TG (triglycerides) >= 150 mg/dl, 
-# LDL-C ≥ 115 mg/dl, and HDLC < 40 mg/dl for men and < 46 mg/dl for women
-# pahs$Lipid_disorder = ifelse(pahs$TC <190 & pahs$TG <150 & pahs$LDLC <115 & pahs$HDLC >=40 & pahs$Lipid_disorder_medication == "0" & pahs$Gender == "Male", "No",
-#                              ifelse(pahs$TC <190 & pahs$TG <150 & pahs$LDLC <115 & pahs$HDLC>=46 & pahs$Lipid_disorder_medication == "0" & pahs$Gender == "Female", "No",
-#                                     "Yes"))
-table(pahs$Lipid_disorder)
-pahs$Lipid_disorder = factor(pahs$Lipid_disorder, 0:1, labels = c("No","Yes"))
-class(pahs$Lipid_disorder)
-
-# Metabolic syndrome
-# 1) WC ≥ 102 cm for men and ≥ 88 cm for women;
-# 2) raised concentration of TG ≥ 150 mg/dl 
-# 3) reduced concentration of HDL-C < 40 mg/dl for men and < 50 mg/dl for women 
-# 4) SBP was ≥ 130 mmHg, or DBP ≥ 85 mmHg;
-# 5) FPG level ≥100 mg/dl
-
-score = ifelse(pahs$WC_cat=="High", 1, 0)
-score = score + ifelse(pahs$TG >=150 | pahs$Lipid_disorder_medication == "1", 1, 0)
-score = score + ifelse(pahs$Lipid_disorder_medication == "1", 1,
-                       ifelse(pahs$HDLC <40 & pahs$Gender == "Male", 1,
-                              ifelse(pahs$HDLC <50 & pahs$Gender == "Female", 1, 0)))
-score = score + ifelse(pahs$SBP >=130 | pahs$DBP >=85  | pahs$Hypertension_medication == "1", 1, 0)
-score = score + ifelse(pahs$FPG >=100 | pahs$Diabetes_medication == "1", 1, 0)
-table(score)
-
-pahs$Metabolic_syndrome = ifelse(score>=3, "Yes", "No")
-table(pahs$Metabolic_syndrome)
-pahs$Metabolic_syndrome = factor(pahs$Metabolic_syndrome)
-class(pahs$Metabolic_syndrome)
-
-# Reorder columns
-colnames(pahs)
-
-pahs = cbind(pahs[,c(1:30,ncol(pahs)-1,ncol(pahs))], pahs[,c(33:ncol(pahs)-2)])
-
-saveRDS(pahs, "../Data/PAHs.rds")
-write.csv(pahs, "../Exports/Data/PAHs.csv")
-
-### Train/Test split----
+## Train/Test split----
+pest = readRDS("../Data/PesticidesPCBBDEs_covar.rds")
+pahs = readRDS("../Data/PAHs_covar.rds")
 
 # Unique participants for training
-train_pest = pest[setdiff(pest$ID, pahs$ID),]
-train_pahs = pahs[setdiff(pahs$ID, pest$ID),]
-
-# Check if covariate information is consistent
-all.equal(pest[(intersect(pest$ID, pahs$ID)),1:32],pahs[(intersect(pest$ID, pahs$ID)),1:32])
+train_pest = setdiff(rownames(pest), rownames(pahs))
+train_pahs = setdiff(rownames(pahs), rownames(pest))
 
 # Overlapping participants for validation
-test = cbind(pest[(intersect(pest$ID, pahs$ID)),],
-             pahs[(intersect(pest$ID, pahs$ID)),33:ncol(pahs)])
-colnames(test)
-str(test)
+test = intersect(rownames(pest), rownames(pahs))
 
-# drop levels
-train_pest = train_pest %>% mutate_if(is.factor,droplevels)
-train_pahs = train_pahs %>% mutate_if(is.factor,droplevels)
-test = test %>% mutate_if(is.factor,droplevels)
+# Check if covariate information is consistent
+all.equal(pest[test,],pahs[test,])
+
+# Covariates data
+train_pest_covar = pest %>% .[train_pest,] %>% mutate_if(is.factor,droplevels)
+train_pahs_covar = pahs %>% .[train_pahs,] %>% mutate_if(is.factor,droplevels)
+test_covar = pest %>% .[test,] %>% mutate_if(is.factor,droplevels)
+str(test_covar)
+
+saveRDS(train_pest_covar, "../Data/PesticidesPCBBDEs_train_covar.rds")
+saveRDS(train_pahs_covar, "../Data/PAHs_train_covar.rds")
+saveRDS(test_covar, "../Data/Overlap_test_covar.rds")
+
+# Check if response information is consistent
+pestY = readRDS("../Data/PesticidesPCBBDEs_response.rds")
+pahsY = readRDS("../Data/PAHs_response.rds")
+all.equal(pestY[test,],pahsY[test,])
+
+# Response data
+train_pestY = pestY %>% .[train_pest,] %>% mutate_if(is.factor,droplevels)
+train_pahsY = pahsY %>% .[train_pahs,] %>% mutate_if(is.factor,droplevels)
+testY = pestY %>% .[test,] %>% mutate_if(is.factor,droplevels)
+str(testY)
+
+saveRDS(train_pestY, "../Data/PesticidesPCBBDEs_train_response.rds")
+saveRDS(train_pahsY, "../Data/PAHs_train_response.rds")
+saveRDS(testY, "../Data/Overlap_test_response.rds")
+
+# Exposure data
+pest = readRDS("../Processed/PesticidesPCBBDEs_expo_ndimp.rds")
+pahs = readRDS("../Processed/PAHs_expo_ndimp.rds")
+
+train_expo = pest %>% .[train_pest,]
+train_pahs_expo = pahs %>% .[train_pahs,]
+test_expo = cbind(pest[test,],pahs[test,])
+str(test_expo)
+
+saveRDS(train_expo, "../Processed/PesticidesPCBBDEs_train_expo_ndimp.rds")
+saveRDS(train_pahs_expo, "../Processed/PAHs_train_expo_ndimp.rds")
+saveRDS(test_expo, "../Processed/Overlap_test_expo_ndimp.rds")
+
 
 ### Combine all participants (covariate and outcome information)----
-outer = rbind(train_pest[,1:32],
-              train_pahs[,1:32],
-              test[,1:32])
-colnames(outer)
-str(outer)
+outer = c(train_pest,train_pahs,test)
+covar = rbind(train_pest_covar, train_pahs_covar, test_covar)
+response = rbind(train_pestY, train_pahsY, testY)
 
-outer$data_type = rep(c("train_pest","train_pahs","test"),
-                      c(nrow(train_pest),nrow(train_pahs), nrow(test)))
-outer$data_type = factor(outer$data_type, levels = c("train_pest","train_pahs","test"))
+str(covar)
+str(response)
 
-table(outer$data_type)
-table(outer$Country,outer$data_type)
-summary(outer)
+covar$data_type = factor(rep(1:3,
+                             c(length(train_pest),length(train_pahs),length(test))),
+                         labels = c("train_pest","train_pahs","test"))
+table(covar$data_type)
+table(covar$Country,covar$data_type)
 
-saveRDS(outer, "../Data/All_participants_info.rds")
-write.csv(outer, "../Exports/Data/All_participants_info.csv")
+saveRDS(covar, "../Data/All_participants_covar.rds")
+write.csv(covar, "../Exports/Data/All_participants_covar.csv")
 
-
+saveRDS(response, "../Data/All_participants_response.rds")
+write.csv(response, "../Exports/Data/All_participants_response.csv")
 

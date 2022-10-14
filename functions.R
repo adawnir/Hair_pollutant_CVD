@@ -50,17 +50,15 @@ ContinuousTest=function(x, y){
     mysd=formatC(sd(10^x[y==j], na.rm=TRUE), format="f", digits=2)
     out=c(out, paste0(mymean, " (", mysd, ")"))
   }
-  
-  # # one-way ANOVA
-  # mytest=summary(aov(x ~ y))
-  # mypval=formatC(mytest[[1]]$`Pr(>F)`[1], format="e", digits=2)
-  # out=c(out, mypval)
-  
   # t-test with unequal variance
   mytest=t.test(x ~ y)
   mypval=formatC(mytest$p.value, format="e", digits=2)
   out=c(out, mypval)
   
+  # # one-way ANOVA
+  # mytest=summary(aov(x ~ y))
+  # mypval=formatC(mytest[[1]]$`Pr(>F)`[1], format="e", digits=2)
+  # out=c(out, mypval)
   return(out)
 }
 

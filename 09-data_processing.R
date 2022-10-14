@@ -16,7 +16,7 @@ source("graph_colours.R")
 filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 prefix = c("train_pest","train_pahs","test")
 for (i in 1:3){
-  data = readRDS(paste0("../Processed/",filepaths[i],"_info_expo_ndimp_naimp_log.rds"))
+  data = readRDS(paste0("../Processed/",filepaths[i],"_covar_naimp.rds"))
   assign(prefix[i], data)
 }
 
@@ -25,7 +25,8 @@ ifelse(dir.exists("../Results/"),"",dir.create("../Results/"))
 ifelse(dir.exists("../Results/DietScore/"),"",dir.create("../Results/DietScore/"))
 
 for (i in 1:3){
-  x = eval(parse(text = prefix[i]))[,10:14]
+  x = eval(parse(text = prefix[i]))
+  x = x %>% select(Energy, Proteins, Fats, Carbohydrates, Fibers)
   mypca = PCA(x, graph = FALSE)
   saveRDS(mypca, paste0("../Results/DietScore/",filepaths[i],"_diet_info_pca.rds"))
   
@@ -35,6 +36,7 @@ for (i in 1:3){
   
   loadings = mypca$var$coord
   ev=mypca$eig[,2]/100
+  print(ev)
   
   # Scree plot
   pdf(paste0("../Figures/Descriptive_statistics/Diet_info_pca_scree_plot_",filepaths[i],".pdf"), width=5, height=5)
@@ -47,9 +49,27 @@ for (i in 1:3){
   dev.off()
 }
 
+for(i in 1:3){
+  mypca = readRDS(paste0("../Results/DietScore/",filepaths[i],"_diet_info_pca.rds"))
+  print(mypca$var$coord[,1:3])
+}
+
+for(i in 1:3){
+  covar = eval(parse(text = prefix[i]))
+  scores = eval(parse(text = paste0(prefix[i],"_scores")))
+  covar = covar %>% mutate(DietScore1 = as.numeric(scores[,1]),
+                           DietScore2 = as.numeric(scores[,2]),
+                           DietScore3 = as.numeric(scores[,3])) %>%
+    select(Country, Age, Gender, Smoking, starts_with("DietScore"),
+           Education, Physical_activity, Alcohol)
+  
+  saveRDS(covar, paste0("../Processed/",filepaths[i],"_Z.rds"))
+  write.csv(covar, paste0("../Exports/Data/",filepaths[i],"_Z.csv"))
+}
+
 ## Clustering binary outcomes ----
-data = readRDS(paste0("../Data/","All_participants_info.rds"))
-tmp = data[,26:30 ]%>% mutate_all(as.integer)-1
+data = readRDS(paste0("../Data/","All_participants_response.rds"))
+tmp = data[,11:15 ]%>% mutate_all(as.integer)-1
 
 # Jaccard distance
 d = dist(tmp, method = "binary")
@@ -73,15 +93,15 @@ myclusters = factor(cutree(h, k = k))
 #          color = c(lighten("#00afac",0.5),"#f4a9be"),
 #          treeheight_row = 0,
 #          cluster_rows = FALSE,
-#          labels_row = gsub("_"," ",colnames(tmp)),
+#          labels_row = c(names(outcome.colours)),
 #          show_colnames = FALSE,
 #          clustering_distance_cols = "binary",
 #          clustering_method = "ward.D2",
 #          treeheight_col = 50,
 #          cutree_cols = k,
 #          legend_breaks = c(0,1),
-#          legend_labels = c("No","Yes"))
-myclusters = factor(myclusters, levels = c(1,4,3,5,2),
+#          legend_labels = c("Normal","Abnormal"))
+myclusters = factor(myclusters, levels = c(1,4,3,2,5),
                     labels = c("No disease", "A","B","C","D"))
 
 mycolours = c("#a1a5a7","#93ceba","#9b0058","#994517","#000000")
@@ -97,7 +117,7 @@ ifelse(dir.exists("../Figures/Comorbidity"),"",dir.create("../Figures/Comorbidit
            color = c(lighten("#00afac",0.5),"#f4a9be"),
            treeheight_row = 0,
            cluster_rows = FALSE,
-           labels_row = gsub("_"," ",colnames(tmp)),
+           labels_row = names(outcome.colours),
            show_colnames = FALSE,
            clustering_distance_cols = "binary",
            clustering_method = "ward.D2",
@@ -107,36 +127,17 @@ ifelse(dir.exists("../Figures/Comorbidity"),"",dir.create("../Figures/Comorbidit
            annotation_colors = mat_colors,
            annotation_legend = TRUE,
            legend_breaks = c(0,1),
-           legend_labels = c("No","Yes"))
+           legend_labels = c("Normal","Abnormal"))
   dev.off()
 }
 
-OutcomeScore = myclusters
-names(OutcomeScore) = rownames(tmp)
+OutcomeCluster = myclusters
+names(OutcomeCluster) = rownames(tmp)
 
-## Reconstruct dataset ----
-pest_XY = cbind(train_pest[,c(1:4,6:9)],
-                train_pest_scores[,1:3],
-                train_pest[,c(26:30,5,15:22)],
-                OutcomeScore[train_pest$ID],
-                train_pest[,c(34:ncol(train_pest))])
-colnames(pest_XY)[26] = "OutcomeCluster"
-pahs_XY = cbind(train_pahs[,c(1:4,6:9)],
-                train_pahs_scores[,1:3],
-                train_pahs[,c(26:30,5,15:22)],
-                OutcomeScore[train_pahs$ID],
-                train_pahs[,c(34:ncol(train_pahs))])
-colnames(pahs_XY)[26] = "OutcomeCluster"
-test_XY = cbind(test[,c(1:4,6:9)],
-                test_scores[,1:3],
-                test[,c(26:30,5,15:22)],
-                OutcomeScore[test$ID],
-                test[,c(34:ncol(test))])
-colnames(test_XY)[26] = "OutcomeCluster"
-
-saveRDS(pest_XY, "../Processed/PesticidesPCBBDEs_train_XY.rds")
-write.csv(pest_XY, paste0("../Exports/Data/PesticidesPCBBDEs_train_XY.csv"))
-saveRDS(pahs_XY, "../Processed/PAHs_train_XY.rds")
-write.csv(pahs_XY, paste0("../Exports/Data/PAHs_train_XY.csv"))
-saveRDS(test_XY, "../Processed/Overlap_test_XY.rds")
-write.csv(test_XY, paste0("../Exports/Data/Overlap_test_XY.csv"))
+for(i in 1:3){
+  response = readRDS(paste0("../Data/",filepaths[i],"_response.rds"))
+  response$OutcomeCluster = factor(OutcomeCluster[rownames(response)],
+                                   labels = c("No disease", "A","B","C","D"))
+  saveRDS(response, paste0("../Processed/",filepaths[i],"_Y.rds"))
+  write.csv(response, paste0("../Exports/Data/",filepaths[i],"_Y.csv"))
+}

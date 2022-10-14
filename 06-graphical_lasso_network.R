@@ -25,20 +25,31 @@ annot = readRDS("../Data/Compound_family_annotation.rds")
 
 filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 # Load data
-data = readRDS(paste0("../Processed/",filepaths[m],"_info_expo_ndimp_naimp_log.rds"))
-
-# Standardisaiton
-expo = data[,c(10:14,34:ncol(data))]
-expo = scale(expo)
+expo = readRDS(paste0("../Processed/",filepaths[m],"_expo_ndimp_naimp_log.rds"))
+covar = readRDS(paste0("../Processed/",filepaths[m],"_covar_naimp.rds"))
+covar = covar %>% select(Energy, Proteins, Fats, Carbohydrates, Fibers)
+response  = readRDS(paste0("../Data/",filepaths[m],"_response.rds"))
+response = response[,1:9]
 
 # Running stability selection
 for (p in c(seq(10,50,10))){
-  print(paste("PFER",p))
+  print(paste("Exposure network: PFER",p))
   t0=Sys.time()
-  out=GraphicalModel(xdata=expo, pk=c(5,ncol(expo)-5), PFER_thr=p)
+  out=GraphicalModel(xdata=cbind(covar,expo), pk=c(ncol(covar),ncol(expo)), PFER_thr=p)
   t1=Sys.time()
   print(t1-t0)
   ifelse(dir.exists("../Results/"),"",dir.create("../Results/"))
   ifelse(dir.exists("../Results/Graphical_network/"),"",dir.create("../Results/Graphical_network/"))
   saveRDS(out, paste0("../Results/Graphical_network/",filepaths[m],"_exposures_network_output_PFER",p,".rds"))
+}
+
+for (p in c(seq(10,50,10))){
+  print(paste("Outcome network: PFER",p))
+  t0=Sys.time()
+  out=GraphicalModel(xdata=response, PFER_thr=p)
+  t1=Sys.time()
+  print(t1-t0)
+  ifelse(dir.exists("../Results/"),"",dir.create("../Results/"))
+  ifelse(dir.exists("../Results/Graphical_network/"),"",dir.create("../Results/Graphical_network/"))
+  saveRDS(out, paste0("../Results/Graphical_network/",filepaths[m],"_outcome_network_output_PFER",p,".rds"))
 }

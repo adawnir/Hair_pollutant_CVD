@@ -13,17 +13,18 @@ library(grid)
 ## Exposure correlation matrix ----
 filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 for (i in 1:3){
-  data = readRDS(paste0("../Processed/",filepaths[i],"_info_expo_ndimp_naimp_log.rds"))
-  expo = data[c(10:14,34:ncol(data))]
+  expo = readRDS(paste0("../Processed/",filepaths[i],"_expo_ndimp_naimp_log.rds"))
   print(ncol(expo))
+  covar = readRDS(paste0("../Processed/",filepaths[i],"_covar_naimp.rds"))
+  covar = covar %>% select(Energy, Proteins, Fats, Carbohydrates, Fibers)
   
-  annot_sub = annot[colnames(expo)[6:ncol(expo)]]
-  mat_col = data.frame(Family = c(rep("Diet intake", 5),annot_sub))
-  rownames(mat_col) = colnames(expo)
+  annot_sub = annot[colnames(expo)]
+  mat_col = data.frame(Family = c(rep("Diet intake", ncol(covar)),annot_sub))
+  rownames(mat_col) = c(colnames(covar), colnames(expo))
   mat_colors = list(Family = c("#ffcc00",annot.colours[unique(annot_sub)]))
   names(mat_colors$Family) = c("Diet intake", unique(annot_sub))
   
-  cor = cor(expo, method = "spearman")
+  cor = cor(cbind(covar, expo), method = "spearman")
   width = height = 0.1*nrow(cor)+3.5
   mybreaks = seq(-1, 1, length = 100)
   {pdf(paste0("../Figures/Descriptive_statistics/Spearman_correlation_matrix_",filepaths[i],".pdf"), width = width, height = height)
@@ -36,14 +37,7 @@ for (i in 1:3){
              annotation_names_row = FALSE, annotation_names_col = FALSE)
     dev.off()
   }
-}
-
-filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
-for (i in 1:3){
-  data = readRDS(paste0("../Processed/",filepaths[i],"_info_expo_ndimp_naimp_log.rds"))
-  expo = data[c(10:14,34:ncol(data))]
-  print(ncol(expo))
-  tmp = cor(expo, method = "spearman")
+  tmp = cor
   tmp[lower.tri(tmp, diag = T)] = NA
   high_corr = cbind(rownames(tmp)[which(abs(tmp) > 0.5, arr.ind = TRUE)[,1]],
                     colnames(tmp)[which(abs(tmp) > 0.5, arr.ind = TRUE)[,2]],
@@ -52,8 +46,8 @@ for (i in 1:3){
 }
 
 ## Outcome correlation matrix ----
-data = readRDS(paste0("../Data/All_participants_info.rds"))
-out = data[c(5,15:22)]
+response = readRDS(paste0("../Data/All_participants_response.rds"))
+out = response[,1:9]
 print(ncol(out))
 
 cor = cor(out, method = "spearman")
@@ -68,7 +62,7 @@ mybreaks = seq(-1, 1, length = 100)
   dev.off()
 }
 
-tmp = cor(out, method = "spearman")
+tmp = cor
 tmp[lower.tri(tmp, diag = T)] = NA
 high_corr = cbind(rownames(tmp)[which(abs(tmp) > 0.5, arr.ind = TRUE)[,1]],
                   colnames(tmp)[which(abs(tmp) > 0.5, arr.ind = TRUE)[,2]],
