@@ -21,8 +21,7 @@ ifelse(dir.exists("../Figures/"),"",dir.create("../Figures/"))
 ifelse(dir.exists("../Figures/R2GUESS/"),"",dir.create("../Figures/R2GUESS/"))
 
 ## Load data
-# Load data
-Y = readRDS(paste0("../Processed/",filepaths[m],"_Y.rds"))
+Y = readRDS(paste0("../Data/",filepaths[m],"_response.rds"))
 Z = readRDS(paste0("../Processed/",filepaths[m],"_Z.rds"))
 X = readRDS(paste0("../Processed/",filepaths[m],"_expo_ndimp_naimp_log.rds"))
 
@@ -30,7 +29,7 @@ Z = Z %>% select(Age, Gender)
 Z = model.matrix(~ ., Z)[,-1]
 
 colnames(Y)
-Y = Y %>% select(where(is.numeric))
+Y = Y %>% select(BMI, WC, TG, TC, LDLC, HDLC, SBP, DBP, FPG)
 
 f0='X[,k] ~ Z'
 
@@ -45,6 +44,7 @@ rownames(X_denoised)=rownames(X)
   
 # sPLS: sparsity on both X and Y
 stab = BiSelection(xdata = X_denoised, ydata = Y, family = "gaussian", ncomp = 3,
+                   LambdaX = 1:(ncol(X) - 1),
                    LambdaY = 1:(ncol(Y) - 1),
                    implementation = SparsePLS)
 
