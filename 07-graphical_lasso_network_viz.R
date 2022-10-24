@@ -12,8 +12,8 @@ library(grid)
 
 source("graph_colours.R")
 
+# Exposures ----
 annot = readRDS("../Data/Compound_family_annotation.rds")
-
 filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 for (m in 1:length(filepaths)){
   for (p in seq(10,50,10)){
@@ -90,5 +90,45 @@ for (m in 1:length(filepaths)){
     )
   }
   dev.off()
+}
+
+# Outcome ----
+filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
+for (m in 1:length(filepaths)){
+  for (p in seq(10,50,10)){
+    out = readRDS(paste0("../Results/Graphical_network/",filepaths[m],"_outcome_network_output_PFER",p,".rds"))
+    ifelse(dir.exists("../Figures/"),"",dir.create("../Figures/"))
+    ifelse(dir.exists("../Figures/Descriptive_statistics/"),"",dir.create("../Figures/Descriptive_statistics/"))
+    pdf(paste0("../Figures/Descriptive_statistics/Graphical_network_outcome_output_",filepaths[m],"_PFER",p,".pdf"), width = 5)
+    par(mar = c(7,5,7,6), pty = "s")
+    CalibrationPlot(out)
+    dev.off()
+    
+    # Adjacency matrix of the calibrated network
+    A=Adjacency(out)
+    saveRDS(A, paste0("../Results/Graphical_network/",filepaths[m],"_outcome_network_adjacency_matrix_PFER",p,".rds"))
+    
+    mynode_colour = c("#ef7c10","#ef7c10","#00722a","#00722a","#00722a",
+                      "#00722a","#dc251f","#dc251f","#009ee2")
+    names(mynode_colour) = colnames(A)
+    mynode_colour = alpha(mynode_colour, 0.7)
+    
+    # Getting igraph object
+    mygraph=Graph(adjacency=A,node_colour=mynode_colour, satellites = TRUE)
+    
+    # Increase vertex size
+    V(mygraph)$size = V(mygraph)$size + 5
+
+    # Plot clusters in graph
+    pdf(paste0("../Figures/Descriptive_statistics/Graphical_network_outcome_community_",filepaths[m],"_PFER",p,".pdf"))
+    par(mar=rep(1,4), xpd = TRUE)
+    set.seed(1)
+    plot(mygraph, layout=layout_with_fr(mygraph),
+         vertex.label.cex = 1)
+    legend("topright",legend = c("Obesity","Dyslipidemia",
+                                 "Hypertension","Diabetes"),
+           pch = 19, col = unique(mynode_colour), bty = "n")
+    dev.off()
+  }
 }
 
