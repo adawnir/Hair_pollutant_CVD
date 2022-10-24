@@ -64,6 +64,7 @@ for(i in 1:3){
                            DietScore3 = as.numeric(scores[,3])) %>%
     select(Country, Age, Gender, Smoking, starts_with("DietScore"),
            Education, Physical_activity, Alcohol)
+  covar$Education = relevel(covar$Education, "High")
   
   saveRDS(covar, paste0("../Processed/",filepaths[i],"_Z.rds"))
   write.csv(covar, paste0("../Exports/Data/",filepaths[i],"_Z.csv"))

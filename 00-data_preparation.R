@@ -58,7 +58,7 @@ for (m in 1:2){
   
   table(newdata$Physical_activity)
   newdata$Physical_activity = factor(newdata$Physical_activity, 1:3, labels = c("Inactive","Moderately active","Active"))
-  
+
   table(newdata$Alcohol)
   newdata$Alcohol = factor(newdata$Alcohol, 1:3, labels = c("Low","Moderate","High"))
   
@@ -74,7 +74,7 @@ for (m in 1:2){
                                                  ifelse(newdata$BMI >=35 & newdata$BMI <40, "Obesity class II",
                                                         "Obesity class III")))))
   newdata$BMI_cat = factor(newdata$BMI_cat,
-                           levels = c("Normal","Underweight","Pre-obesity",
+                           levels = c("Underweight","Normal", "Pre-obesity",
                                       "Obesity class I","Obesity class II",
                                       "Obesity class III"))
   

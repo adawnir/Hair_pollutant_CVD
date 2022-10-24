@@ -9,7 +9,6 @@ library(tidyverse)
 library(RColorBrewer)
 library(FactoMineR)
 source("functions.R")
-source("graph_colours.R")
 
 ## Exposures ----
 annot = readRDS("../Data/Compound_family_annotation.rds")
@@ -19,10 +18,19 @@ for (i in 1:3){
   # Load data
   expo = readRDS(paste0("../Processed/",filepaths[i],"_expo_ndimp_naimp_log.rds"))
   print(ncol(expo))
-  covar = readRDS(paste0("../Data/",filepaths[i],"_covar.rds"))
+  covar = readRDS(paste0("../Processed/",filepaths[i],"_covar_naimp.rds"))
   
   mypca=PCA(expo, graph = FALSE)
   ev=mypca$eig[,2]
+  
+  country.colours = c("#ffcc00","#009ee2")
+  names(country.colours) = c("Belgium","Luxembourg")
+  
+  gender.colours = c("#0019a8","#dc251f")
+  names(gender.colours) = c("Male","Female")
+  
+  sep.colours = c("#dc251f","#994517","#9364cc")
+  names(sep.colours) = c("Low","Intermediate","High")
   
   CreateScorePlot(mypca=mypca, type=as.character(covar$Country),
                   mycolours=country.colours[levels(covar$Country)],
@@ -32,10 +40,14 @@ for (i in 1:3){
                   mycolours=gender.colours[levels(covar$Gender)],
                   filename=paste0("../Figures/Descriptive_statistics/PCA_score_plot_by_Gender_",filepaths[i],".pdf"),
                   ellipse = TRUE)
+  CreateScorePlot(mypca=mypca, type=as.character(covar$Education),
+                  mycolours=sep.colours[levels(covar$Education)],
+                  filename=paste0("../Figures/Descriptive_statistics/PCA_score_plot_by_Education_",filepaths[i],".pdf"),
+                  ellipse = TRUE)
   
   response = readRDS(paste0("../Data/",filepaths[i],"_response.rds"))[,1:9]
   print(ncol(response))
-  covar = readRDS(paste0("../Data/",filepaths[i],"_covar.rds"))
+  covar = readRDS(paste0("../Processed/",filepaths[i],"_covar_naimp.rds"))
   
   mypca=PCA(response, graph = FALSE)
   ev=mypca$eig[,2]
@@ -47,6 +59,10 @@ for (i in 1:3){
   CreateScorePlot(mypca=mypca, type=as.character(covar$Gender),
                   mycolours=gender.colours[levels(covar$Gender)],
                   filename=paste0("../Figures/Descriptive_statistics/PCA_score_plot_outcome_by_Gender_",filepaths[i],".pdf"),
+                  ellipse = TRUE)
+  CreateScorePlot(mypca=mypca, type=as.character(covar$Education),
+                  mycolours=sep.colours[levels(covar$Education)],
+                  filename=paste0("../Figures/Descriptive_statistics/PCA_score_plot_outcome_by_Education_",filepaths[i],".pdf"),
                   ellipse = TRUE)
   
   # mycor=cor(expo, mypca$ind$coord)

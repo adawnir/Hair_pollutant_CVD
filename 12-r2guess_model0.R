@@ -11,6 +11,7 @@ library(tidyverse)
 ## Parameters
 args=commandArgs(trailingOnly=TRUE)
 m=as.numeric(args[1])
+filepaths = c("PesticidesPCBBDEs_train","PAHs_train")
 
 ifelse(dir.exists("../Results/"),"",dir.create("../Results/"))
 ifelse(dir.exists("../Results/R2GUESS/"),"",dir.create("../Results/R2GUESS/"))
@@ -19,7 +20,6 @@ ifelse(dir.exists(paste0("../Results/R2GUESS/",filepaths[m])),"",dir.create(past
 ifelse(dir.exists("../Figures/"),"",dir.create("../Figures/"))
 ifelse(dir.exists("../Figures/R2GUESS/"),"",dir.create("../Figures/R2GUESS/"))
 
-filepaths = c("PesticidesPCBBDEs_train","PAHs_train")
 
 # Load data
 Y = readRDS(paste0("../Processed/",filepaths[m],"_Y.rds"))
