@@ -22,9 +22,10 @@ ifelse(dir.exists("../Figures/R2GUESS/"),"",dir.create("../Figures/R2GUESS/"))
 
 
 # Load data
-Y = readRDS(paste0("../Processed/",filepaths[m],"_Y.rds"))
+Y = readRDS(paste0("../Data/",filepaths[m],"_response.rds"))
 Z = readRDS(paste0("../Processed/",filepaths[m],"_Z.rds"))
 X = readRDS(paste0("../Processed/",filepaths[m],"_expo_ndimp_naimp_log.rds"))
+X = as.data.frame(X)
 
 stab = readRDS(paste0("../Results/R2GUESS/sPLS_output_",filepaths[m],".rds"))
 
@@ -40,6 +41,7 @@ sgam = sum(rowSums(stab$selectedX)>0)
 # Confounders
 Z = Z %>% select(Age, Gender)
 Z = model.matrix(~ ., Z)[,-1]
+Z = as.data.frame(Z)
 
 # parameters
 path.par = paste(system.file("extdata", package = "R2GUESS"), "/", sep = "")
