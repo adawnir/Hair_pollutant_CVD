@@ -12,38 +12,39 @@ source("graph_colours.R")
 library(colorspace)
 
 ## Load data
-myfiles = list.files(path = "../Results/R2GUESS/", pattern = "f[0-9]_model_P")
-m = 1
+myfiles = list.files(path = "../Results/R2GUESS/", pattern = "Model")
 
-split = gsub("f[0-9]_model_","",myfiles[m])
-data_type = gsub(".rds","",split)
-model_type = regmatches(myfiles[m], regexpr("f[1-4]", myfiles[m]))
+for (m in 1:length(myfiles)){
+  model = readRDS(paste0("../Results/R2GUESS/",myfiles[m]))
+  data_type = gsub(".rds","",sub("^Model[^_]*_","",myfiles[m]))
+  X = readRDS(paste0("../Processed/",data_type,"_expo_ndimp_naimp_log.rds"))
+  
+  ## Visualisation ----
+  annot = readRDS("../Data/Compound_family_annotation.rds")
+  annot_sub = annot[colnames(X)]
+  
+  # Extract MPPI
+  NameMarg = file.path(model$path.output, paste(model$root.file.output,"output_marg_prob_incl.txt",sep="_"))
+  Marg  = read.table(NameMarg,header=TRUE)
+  Marg$Predictor = colnames(X)
+  
+  ## MPPI plots
+  pdf(paste0("../Figures/R2GUESS/MPPI_",gsub(".rds",".pdf",myfiles[m])), width = 9, height = 6)
+  par(mar=c(13,5,5,3))
+  plot(Marg$Marg_Prob_Incl, type = "h", ylim = c(0,1),
+       xaxt = "n", lwd=2,
+       xlab = "", ylab = "Marginal Posterior Probability of Inclusion (MPPI)", cex.lab=1.2)
+  abline(h = 0.1, col = "darkred", lty = 2)
+  coord = par("usr")
+  text(coord[2], 0.1, "MPPI = 0.1", col = "darkred", adj = c(1,1), cex = 0.8)
+  for (i in 1:nrow(Marg)){
+    axis(side=1, at=i, labels=Marg$Predictor[i],
+         col.axis = ifelse(Marg$Marg_Prob_Incl[i]>0.1,darken(annot.colours[annot_sub[i]],0.5),"black"),
+         las=2, cex.axis = 0.8)
+  }
+  dev.off() 
+}
 
-model = readRDS(paste0("../Results/R2GUESS/",myfiles[m]))
-res.g = readRDS(paste0("../Results/R2GUESS/",gsub("model","model_res",myfiles[m])))
-beta = readRDS(paste0("../Results/R2GUESS/",gsub("model","model_beta",myfiles[m])))
-
-## Visualisation ----
-annot = readRDS("../Data/Compound_family_annotation.rds")
-X = readRDS(paste0("../Processed/",data_type,"_XY.rds"))
-X = X[,27:ncol(X)]
-annot_sub = annot[colnames(X)]
-
-# Extract MPPI
-NameMarg = file.path(model$path.output, paste(model$root.file.output,"output_marg_prob_incl.txt",sep="_"))
-Marg  = read.table(NameMarg,header=TRUE)
-
-## MPPI plots
-pdf(paste0("../Figures/R2GUESS/",model_type,"_MPPI_",data_type,".pdf"), width = 9, height = 5)
-par(mar=c(5,5,5,10))
-plotMPPI(model, threshold.model = 100, cutoff = FALSE)
-legend("topright",
-       inset = c(-0.25,0),
-       legend = paste0(which(Marg$Marg_Prob_Incl > 0.01),". ",
-                       colnames(X)[Marg$Marg_Prob_Incl > 0.01]),
-       text.col = darken(annot.colours[annot_sub[which(Marg$Marg_Prob_Incl > 0.01)]],0.5),
-       xpd = NA, x.intersp = 0, bty = "n")
-dev.off()
 
 ## Boxplots summarising the posterior distribution of the
 ## regression coefficients for selected variables
