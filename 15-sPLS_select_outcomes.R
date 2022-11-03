@@ -56,7 +56,7 @@ CalibrationPlot(stab)
 dev.off()
 
 pdf(paste0("../Figures/R2GUESS/sPLS_network_",filepaths[m],".pdf"))
-plot(stab)
+plot(stab, cex = 5)
 dev.off()
 
 print(summary(stab))
