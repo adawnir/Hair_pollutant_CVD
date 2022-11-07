@@ -46,7 +46,7 @@ for (i in 1:3){
 }
 
 ## Outcome correlation matrix ----
-response = readRDS(paste0("../Data/All_participants_response.rds"))
+response = readRDS(paste0("../Data/PesticidesPCBBDEs_train_response.rds"))
 out = response[,1:9]
 print(ncol(out))
 
@@ -87,7 +87,7 @@ draw_legend = function(color, breaks, legend, ...){
   
   rect = rectGrob(x = 0, y = breaks[-length(breaks)], width = unit(10, "bigpts"), height = h, hjust = 0, vjust = 0, gp = gpar(fill = color, col = "#FFFFFF00"))
   text = textGrob(names(legend), x = unit(14, "bigpts"), y = legend_pos, hjust = 0, gp = gpar(...))
-  title = textGrob("Spearman's correlation coefficient", x = 0, y = 1.02, hjust = 0.5, vjust = 0, gp = gpar(...))
+  title = textGrob("Spearman's correlation coefficient", x = 0, y = 1.05, hjust = 0.5, vjust = 0, gp = gpar(...))
   
   res = grobTree(rect, text, title,
                  vp = viewport(x = unit(0.7, "npc"), height=unit(0.8, "npc"),width=unit(4, "cm")))
@@ -102,7 +102,13 @@ color = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100)
 annot.colours.plus = c("#ffcc00",annot.colours)
 names(annot.colours.plus) = c("Diet intake",names(annot.colours))
 
-{pdf("../Figures/Descriptive_statistics/Spearman_correlation_matrix_legend.pdf", height = 7, width = 4)
+{pdf("../Figures/Descriptive_statistics/Spearman_correlation_matrix_outcome_legend.pdf", height = 3, width = 3)
+  grid.newpage()
+  grid.draw(draw_legend(color, mybreaks, legend))
+  dev.off()
+}
+
+{pdf("../Figures/Descriptive_statistics/Spearman_correlation_matrix_exposure_legend.pdf", height = 7, width = 4)
   grid.newpage()
   grid.draw(draw_legend(color, mybreaks, legend))
   for(e in 1:length(annot.colours.plus)) {

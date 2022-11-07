@@ -9,22 +9,23 @@ library(tidyverse)
 library(RColorBrewer)
 library(FactoMineR)
 source("functions.R")
+source("graph_colours.R")
 
-## Exposures ----
 annot = readRDS("../Data/Compound_family_annotation.rds")
 
 filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 for (i in 1:3){
+  ## Exposures ----
   # Load data
   expo = readRDS(paste0("../Processed/",filepaths[i],"_expo_ndimp_naimp_log.rds"))
   print(ncol(expo))
   covar = readRDS(paste0("../Processed/",filepaths[i],"_covar_naimp.rds"))
   
   mypca=PCA(expo, graph = FALSE)
-  ev=mypca$eig[,2]
+  ev=mypca$eig[,2]/100
   
-  country.colours = c("#ffcc00","#009ee2")
-  names(country.colours) = c("Belgium","Luxembourg")
+  centre.colours = c("#ffcc00","#009ee2")
+  names(centre.colours) = c("Belgium","Luxembourg")
   
   gender.colours = c("#0019a8","#dc251f")
   names(gender.colours) = c("Male","Female")
@@ -32,19 +33,40 @@ for (i in 1:3){
   sep.colours = c("#dc251f","#994517","#9364cc")
   names(sep.colours) = c("Low","Intermediate","High")
   
-  CreateScorePlot(mypca=mypca, type=as.character(covar$Country),
-                  mycolours=country.colours[levels(covar$Country)],
-                  filename=paste0("../Figures/Descriptive_statistics/PCA_score_plot_by_Country_",filepaths[i],".pdf"),
+  CreateScorePlot(mypca=mypca, type=as.character(covar$Centre),
+                  mycolours=centre.colours[levels(covar$Centre)],
+                  filename=paste0("../Figures/Descriptive_statistics/PCA_score_plot_by_Centre_",filepaths[i],".pdf"),
                   ellipse = TRUE)
   CreateScorePlot(mypca=mypca, type=as.character(covar$Gender),
                   mycolours=gender.colours[levels(covar$Gender)],
                   filename=paste0("../Figures/Descriptive_statistics/PCA_score_plot_by_Gender_",filepaths[i],".pdf"),
                   ellipse = TRUE)
-  CreateScorePlot(mypca=mypca, type=as.character(covar$Education),
+  CreateScorePlot(mypca=mypca,  type=as.character(covar$Education),
                   mycolours=sep.colours[levels(covar$Education)],
                   filename=paste0("../Figures/Descriptive_statistics/PCA_score_plot_by_Education_",filepaths[i],".pdf"),
                   ellipse = TRUE)
   
+  # Scree plot
+  pdf(paste0("../Figures/Descriptive_statistics/PCA_scree_plot_",filepaths[i],".pdf"), width=5, height=5)
+  par(mar=c(5,5,1,1))
+  plot(ev, pch=19, col="#0019a8", las=1, type="b", ylim=c(0,1),
+       ylab="Proportion of explained variance", xlab="PCs")
+  points(cumsum(ev), pch=19, col="#dc251f", type="b")
+  legend("right", pch=19, col=c("#0019a8", "#dc251f"),
+         legend=c("Proportion of e.v.", "Cumulative proportion of e.v."))
+  dev.off()
+  
+  # Correlation circle
+  annot_sub = annot[colnames(expo)]
+  CreateBiPlot(mypca=mypca, type=as.character(covar$Centre),
+                  type.colours=centre.colours[levels(covar$Centre)],
+                  var.colours = annot.colours[annot_sub],
+                  filename=paste0("../Figures/Descriptive_statistics/PCA_biplot_by_Centre_",filepaths[i],".pdf"))
+  
+  loadings = mypca$var$coord
+  print(loadings[,1:3])
+  
+  ## Outcomes ----
   response = readRDS(paste0("../Data/",filepaths[i],"_response.rds"))[,1:9]
   print(ncol(response))
   covar = readRDS(paste0("../Processed/",filepaths[i],"_covar_naimp.rds"))
@@ -52,9 +74,9 @@ for (i in 1:3){
   mypca=PCA(response, graph = FALSE)
   ev=mypca$eig[,2]
   
-  CreateScorePlot(mypca=mypca, type=as.character(covar$Country),
-                  mycolours=country.colours[levels(covar$Country)],
-                  filename=paste0("../Figures/Descriptive_statistics/PCA_score_plot_outcome_by_Country_",filepaths[i],".pdf"),
+  CreateScorePlot(mypca=mypca, type=as.character(covar$Centre),
+                  mycolours=centre.colours[levels(covar$Centre)],
+                  filename=paste0("../Figures/Descriptive_statistics/PCA_score_plot_outcome_by_Centre_",filepaths[i],".pdf"),
                   ellipse = TRUE)
   CreateScorePlot(mypca=mypca, type=as.character(covar$Gender),
                   mycolours=gender.colours[levels(covar$Gender)],

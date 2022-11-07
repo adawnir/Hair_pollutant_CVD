@@ -10,33 +10,43 @@ library(tidyverse)
 
 ## Parameters
 filepaths = c("PesticidesPCBBDEs_train","PAHs_train")
+paths = c("Option1","Option2","Option3")
+
+args=commandArgs(trailingOnly=TRUE)
+i=as.numeric(args[1])
 
 m = 1
 
 ifelse(dir.exists("../Results/"),"",dir.create("../Results/"))
 ifelse(dir.exists("../Results/R2GUESS/"),"",dir.create("../Results/R2GUESS/"))
-ifelse(dir.exists(paste0("../Results/R2GUESS/",filepaths[m])),"",dir.create(paste0("../Results/R2GUESS/",filepaths[m])))
+ifelse(dir.exists(paste0("../Results/R2GUESS/",paths[i])),"",dir.create(paste0("../Results/R2GUESS/",paths[i])))
 
 ifelse(dir.exists("../Figures/"),"",dir.create("../Figures/"))
 ifelse(dir.exists("../Figures/R2GUESS/"),"",dir.create("../Figures/R2GUESS/"))
 
 
 # Load data
-Y = readRDS(paste0("../Data/",filepaths[m],"_response.rds"))
+response = readRDS(paste0("../Data/",filepaths[m],"_response.rds"))
 Z = readRDS(paste0("../Processed/",filepaths[m],"_Z.rds"))
 X = readRDS(paste0("../Processed/",filepaths[m],"_expo_ndimp_naimp_log.rds"))
 X = as.data.frame(X)
 
-stab = readRDS(paste0("../Results/R2GUESS/sPLS_output_",filepaths[m],".rds"))
-
 # Select outcomes
 colnames(Y)
-Y = Y %>% select(BMI, WC, TG, TC, LDLC, HDLC, SBP, DBP, FPG)
-Y = Y[,rowSums(stab$selectedY)>0]
+if (i==1){
+  Y = response %>% select(BMI, WC, TG, HDLC, SBP, DBP)
+}
+if (i==2){
+  Y = response %>% select(BMI, WC, TG, TC, LDLC, HDLC, SBP, DBP)
+}
+if (i==3){
+  Y = response %>% select(BMI, WC, TG, TC, LDLC, HDLC, SBP, DBP, FPG)
+}
+
 
 # Prior
-egam = sum(rowSums(stab$selectedX)>0)
-sgam = sum(rowSums(stab$selectedX)>0)
+egam = 8
+sgam = 8
 
 MyR2GUESS = function(f){
   if (f == 0){
@@ -62,6 +72,11 @@ MyR2GUESS = function(f){
     Z = Z %>% select(Age, Gender, Education, Smoking, starts_with("Diet"),
                      Physical_activity, Alcohol)
   }
+  if (f == 7){
+    Z = Z %>% select(Age, Gender, Education, Smoking, starts_with("Diet"),
+                     Physical_activity, Alcohol) %>%
+      bind_cols(response %>% select(ends_with("medication")))
+  }
   # Confounders
   Z = model.matrix(~ ., Z)[,-1]
   Z = as.data.frame(Z)
@@ -71,7 +86,7 @@ MyR2GUESS = function(f){
   nsweep = 30000
   burn.in = 10000
   
-  path.output = gsub("Scripts", paste0("Results/R2GUESS/",filepaths[m]), getwd())
+  path.output = gsub("Scripts", paste0("Results/R2GUESS/",paths[i]), getwd())
   ifelse(dir.exists(sprintf(paste0("%s/model",f),path.output)),"",dir.create(sprintf(paste0("%s/model",f), path.output)))
   path.input = sprintf(paste0("%s/model",f), path.output)
   
@@ -87,19 +102,19 @@ MyR2GUESS = function(f){
                   conf = Z, cuda = FALSE,
                   MAP.file = NULL, seed = 2)
   
-  saveRDS(model, paste0("../Results/R2GUESS/Model",f,"_",filepaths[m],".rds"))
+  saveRDS(model, paste0("../Results/R2GUESS/",paths[i],"/Model",f,".rds"))
   
   ## Diagnostic plots to assess the convergence of the algorithm
-  jpeg(paste0("../Figures/R2GUESS/Model",f,"_monitor_App_",filepaths[m],".jpg"), width = 20, height = 17, units = "cm", res = 300)
+  jpeg(paste0("../Figures/R2GUESS/",paths[i],"/Model",f,"_monitor_App.jpg"), width = 20, height = 17, units = "cm", res = 300)
   plot(model)
   dev.off()
   
   ## Diagnostic plots to assess the convergence of the algorithm
-  pdf(paste0("../Figures/R2GUESS/Model",f,"_conv1_",filepaths[m],".pdf"))
+  pdf(paste0("../Figures/R2GUESS/",paths[i],"/Model",f,"_conv1.pdf"))
   check.convergence(model, 1)
   dev.off()
   
-  pdf(paste0("../Figures/R2GUESS/Model",f,"_conv2_",filepaths[m],".pdf"))
+  pdf(paste0("../Figures/R2GUESS/",paths[i],"/Model",f,"_conv2.pdf"))
   check.convergence(model, 2)
   dev.off()
   
@@ -108,8 +123,8 @@ MyR2GUESS = function(f){
   res.g = get.g.sweep(model, n.sweep$result, 1)
   beta = sample.beta(model, res.g, Nmonte = 2, Nmonte.sigma = 2)
 
-  saveRDS(res.g, paste0("../Results/R2GUESS/",model_type,"_model_res_",filepaths[m],".rds"))
-  saveRDS(beta, paste0("../Results/R2GUESS/",model_type,"_model_beta_",filepaths[m],".rds"))
+  saveRDS(res.g, paste0("../Results/R2GUESS/",paths[i],"/",model_type,"_model_res.rds"))
+  saveRDS(beta, paste0("../Results/R2GUESS/",paths[i],"/",model_type,"_model_beta.rds"))
 
 }
 

@@ -28,8 +28,8 @@ for (i in 1:2){
       # Ztest = Ztest %>% select(Age, Gender)
     }
     if (f==1){
-      Z = Z %>% select(Age, Gender, Country)
-      # Ztest = Ztest %>% select(Age, Gender, Country)
+      Z = Z %>% select(Age, Gender, Centre)
+      # Ztest = Ztest %>% select(Age, Gender, Centre)
     }
     if (f==2){
       Z = Z %>% select(Age, Gender, Education)

@@ -75,7 +75,7 @@ for (m in 1:2){
   SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/Descriptive_statistics/Compare_mean_exposure_by_data_type_",gsub("_train","",filepaths[m]),".xlsx"))
 }
 
-## Comparing exposures between populations: by Country ----
+## Comparing exposures between populations: by Centre ----
 annot = readRDS("../Data/Compound_family_annotation.rds")
 
 filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
@@ -86,14 +86,14 @@ for (m in 1:2){
   
   data1 = readRDS(paste0("../Data/",filepaths[m],"_covar",".rds"))
   data2 = readRDS(paste0("../Data/",filepaths[3],"_covar",".rds"))
-  Country = factor(c(data1$Country, data2$Country), labels = levels(data1$Country))
+  Centre = factor(c(data1$Centre, data2$Centre), labels = levels(data1$Centre))
   
   annot_sub = annot[colnames(expo)]
   
   mytable=NULL
   for (k in 1:length(colnames(expo))){
     print(colnames(expo)[k])
-    tmp=ContinuousTest(x=expo[,k], y=Country)
+    tmp=ContinuousTest(x=expo[,k], y=Centre)
     if(!duplicated(annot_sub)[k]){
       mytable=rbind(mytable, rep(NA,length(tmp)))
       rownames(mytable)[nrow(mytable)]=as.character(annot_sub[k])
@@ -101,9 +101,9 @@ for (m in 1:2){
     mytable=rbind(mytable, tmp)
     rownames(mytable)[nrow(mytable)]=colnames(expo)[k]
   }
-  colnames(mytable)=c(paste0(levels(Country),", Mean (sd)"),"P-value")
+  colnames(mytable)=c(paste0(levels(Centre),", Mean (sd)"),"P-value")
   # mytable=ReformatScientificNotation(mytable)
-  SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/Descriptive_statistics/Compare_mean_exposure_by_Country_",gsub("_train","",filepaths[m]),".xlsx"))
+  SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/Descriptive_statistics/Compare_mean_exposure_by_Centre_",gsub("_train","",filepaths[m]),".xlsx"))
 }
 
 ## Comparing exposures between populations: by Gender ----

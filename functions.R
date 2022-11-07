@@ -113,8 +113,59 @@ CreateScorePlot=function(mypca, filename=NULL, type, mycolours, comp=NULL, pch=1
   if (legend){
     par(mar = c(0,1,1,0))
     plot(0, 0, type = 'l', bty = 'n', xaxt = 'n', yaxt = 'n', xlab = "", ylab = "")
-    legend("left", col=mycolours, ncol = ceiling(length(mycolours)/24),
+    legend("left", col=mycolours, ncol = ceiling(length(mycolours)/25),
            pch=pch, pt.cex=2, legend=names(mycolours), bty = "n", cex = 1.5)
+  }
+  if (!is.null(filename)){
+    print("Saved to filename")
+    dev.off()
+  }
+}
+
+CreateBiPlot=function(mypca, filename=NULL, type, type.colours, var.colours,
+                      comp=NULL, pch=19, legend = TRUE, wide = FALSE){
+  if (is.null(comp)){
+    comp=matrix(c(1,2,1,3,2,3), byrow=TRUE, ncol=2)
+  }
+  if (legend){
+    extra = ceiling(length(type.colours)/25)
+  } else {
+    extra = 0
+  }
+  if (!is.null(filename)){
+    pdf(paste0(filename), width=15+2.5*extra, height=5) 
+  }
+  if (legend){
+    par(mar = c(5,5,1,1))
+    layout(matrix(c(1,2,3,4), 1, 4, byrow = TRUE), widths=c(2,2,2,extra))
+  } else {
+    par(mar = c(5,5,1,1), mfrow = c(1,3))
+  }
+  for (k in 1:nrow(comp)){
+    xcomp=comp[k,1]
+    ycomp=comp[k,2]
+    S = mypca$ind$coord[,c(xcomp,ycomp)]
+    loadings=mypca$var$coord*10
+    plot(S, pch=pch, cex=2, las=1, type = "n",
+         col=type.colours[type],
+         xlab=paste0("Comp ",xcomp," (", round(ev[xcomp], digits=2), "% e.v.)"),
+         ylab=paste0("Comp ",ycomp," (", round(ev[ycomp], digits=2), "% e.v.)"),
+         cex.lab = 1.5)
+    points(S, pch=pch, cex=1.2, col=alpha(type.colours[type],0.5))
+    points(loadings[,c(xcomp,ycomp)],cex=0.1, pch=19,col=var.colours)
+    arrows(x0=rep(0, nrow(loadings)), y0=rep(0, nrow(loadings)),
+           x1=loadings[,xcomp], y1=loadings[,ycomp], length=0.1, col=var.colours)
+    abline(v=axTicks(1), lty=3, col="grey")
+    abline(h=axTicks(2), lty=3, col="grey")
+    text(loadings[,xcomp]+sign(loadings[,xcomp])*0.1, loadings[,ycomp]+sign(loadings[,xcomp])*0.1,
+         labels=rownames(loadings), cex=0.8,
+         col=darken(var.colours,0.5))
+  }
+  if (legend){
+    par(mar = c(0,1,1,0))
+    plot(0, 0, type = 'l', bty = 'n', xaxt = 'n', yaxt = 'n', xlab = "", ylab = "")
+    legend("left", col=type.colours, ncol = ceiling(length(type.colours)/25),
+           pch=pch, pt.cex=2, legend=names(type.colours), bty = "n", cex = 1.5)
   }
   if (!is.null(filename)){
     print("Saved to filename")

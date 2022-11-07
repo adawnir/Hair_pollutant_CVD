@@ -16,7 +16,7 @@ for (i in 1:3){
   
   Y = Y %>% select(BMI, WC, TG, TC, LDLC, HDLC, SBP, DBP, FPG)
   
-  Z = Z %>% select(Age, Gender, Country, Education, Smoking, starts_with("Diet"),
+  Z = Z %>% select(Age, Gender, Centre, Education, Smoking, starts_with("Diet"),
                    Physical_activity, Alcohol)
   Z_mat = model.matrix(~ ., Z)[,-1]
   

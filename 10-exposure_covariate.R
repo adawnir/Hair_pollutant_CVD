@@ -13,7 +13,7 @@ for (i in 1:3){
   # Load data
   Z = readRDS(paste0("../Processed/",filepaths[i],"_Z.rds"))
   X = readRDS(paste0("../Processed/",filepaths[i],"_expo_ndimp_naimp_log.rds"))
-  Z = Z %>% select(Age, Gender, Country, Education, Smoking, starts_with("Diet"),
+  Z = Z %>% select(Age, Gender, Centre, Education, Smoking, starts_with("Diet"),
                    Physical_activity, Alcohol)
   Z_mat = model.matrix(~ ., Z)[,-1]
   
@@ -72,7 +72,7 @@ for (i in 1:3){
   Z = readRDS(paste0("../Processed/",filepaths[i],"_Z.rds"))
   colnames(Z)
   
-  Z = Z %>% select(Education, Age, Gender, Country)
+  Z = Z %>% select(Education, Age, Gender, Centre)
   Z = model.matrix(~ ., Z)[,-1]
   
   # Linear regression

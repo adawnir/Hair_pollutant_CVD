@@ -9,145 +9,16 @@ library(tidyverse)
 
 ifelse(dir.exists("../Exports/Descriptive_statistics/"), "", dir.create("../Exports/Descriptive_statistics/"))
 
-# Overview of population characteristics ----
+# Overview of population characteristics (All participants) ----
 covar = readRDS(paste0("../Data/","All_participants_covar",".rds"))
-## Overview of population characteristics: by Country ----
-group.factor.name = "Country"
-data = covar %>% select(Age, Gender, Education, Smoking,
-                        Energy, Proteins, Fats, Carbohydrates, Fibers,
-                        Physical_activity, Alcohol)
-labels = c("Age","Gender", "Education","Smoking status", "Energy", "Proteins", "Fats",
-          "Carbohydrates", "Fibers", "Physical activity",
-          "Alcohol consumption")
-units = c("years",NA, NA, NA, "kcal/day", "g/day", "g/day",
-          "g/day", "g/day", NA, NA)
-{
-  group.factor = covar[,group.factor.name]
-  mytable=NULL
-  for (v in 1:ncol(data)){
-    label = labels[v]
-    unit = units[v]
-    if (is.numeric(data[,v])){
-      mymean=formatC(mean(data[,v], na.rm=TRUE), format="f", digits=1)
-      mysd=formatC(sd(data[,v], na.rm=TRUE), format="f", digits=1)
-      out = paste0(mymean, " (", mysd, ")")
-      for (k in levels(group.factor)){
-        mymean=formatC(mean(data[,v][group.factor==k], na.rm=TRUE), format="f", digits=1)
-        mysd=formatC(sd(data[,v][group.factor==k], na.rm=TRUE), format="f", digits=1)
-        out=c(out, paste0(mymean, " (", mysd, ")"))
-      }
-      mytable=rbind(mytable, out)
-      rownames(mytable)[nrow(mytable)]= paste0(label," (",unit,"), ","Mean (SD)")
-      myn = sum(is.na(data[,v]))
-      } else if(is.factor(data[,v])){
-      mytable=rbind(mytable, rep(NA, length(levels(group.factor))+1))
-      rownames(mytable)[nrow(mytable)]=paste0(label, ", N (%)")
-      for (l in 1:length(levels(data[,v]))){
-        myn = sum(data[,v]==levels(data[,v])[l], na.rm = T)
-        myp = formatC(myn/length(data[,v])*100, format = "f", digits = 1)
-        out = paste0(myn, " (", myp, "%)")
-        for (k in levels(group.factor)){
-          myn = sum(data[,v][group.factor==k]==levels(data[,v])[l], na.rm = T)
-          myp = formatC(myn/sum(group.factor==k)*100, format = "f", digits = 1)
-          out=c(out, paste0(myn, " (", myp, "%)"))
-        }
-        mytable=rbind(mytable, out)
-        rownames(mytable)[nrow(mytable)]=paste0(levels(data[,v])[l]) 
-      }
-    }
-    myn = sum(is.na(data[,v]))
-    if(myn > 0){
-      myp = formatC(myn/length(data[,v])*100, format = "f", digits = 1)
-      out = paste0(myn, " (", myp, "%)")
-      for (k in levels(group.factor)){
-        myn = sum(is.na(data[,v][group.factor==k]))
-        myp = formatC(myn/sum(group.factor==k)*100, format = "f", digits = 1)
-        out=c(out, paste0(myn, " (", myp, "%)"))
-      }
-      mytable=rbind(mytable, out)
-      rownames(mytable)[nrow(mytable)]="Missing, N (%)"
-    }
-  }
-  out = nrow(data)
-  for (k in levels(group.factor)){
-    out=c(out, sum(group.factor==k))
-  }
-  colnames(mytable)=paste0(c("Total",levels(group.factor))," (N=",out,")")
-  SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/Descriptive_statistics/","Characteristics_by_",group.factor.name,".xlsx"))
-}
-## Overview of population characteristics: by Gender ----
-group.factor.name = "Gender"
-data = covar %>% select(Age, Education, Smoking,
-                        Energy, Proteins, Fats, Carbohydrates, Fibers,
-                        Physical_activity, Alcohol, Country)
-labels = c("Age", "Education", "Smoking status", "Energy", "Proteins", "Fats",
-           "Carbohydrates", "Fibers","Physical activity",
-           "Alcohol consumption", "Country")
-units = c("years", NA, NA, "kcal/day", "g/day", "g/day",
-          "g/day", "g/day", NA, NA, NA)
-{
-  group.factor = covar[,group.factor.name]
-  mytable=NULL
-  for (v in 1:ncol(data)){
-    label = labels[v]
-    unit = units[v]
-    if (is.numeric(data[,v])){
-      mymean=formatC(mean(data[,v], na.rm=TRUE), format="f", digits=1)
-      mysd=formatC(sd(data[,v], na.rm=TRUE), format="f", digits=1)
-      out = paste0(mymean, " (", mysd, ")")
-      for (k in levels(group.factor)){
-        mymean=formatC(mean(data[,v][group.factor==k], na.rm=TRUE), format="f", digits=1)
-        mysd=formatC(sd(data[,v][group.factor==k], na.rm=TRUE), format="f", digits=1)
-        out=c(out, paste0(mymean, " (", mysd, ")"))
-      }
-      mytable=rbind(mytable, out)
-      rownames(mytable)[nrow(mytable)]= paste0(label," (",unit,"), ","Mean (SD)")
-      myn = sum(is.na(data[,v]))
-    } else if(is.factor(data[,v])){
-      mytable=rbind(mytable, rep(NA, length(levels(group.factor))+1))
-      rownames(mytable)[nrow(mytable)]=paste0(label, ", N (%)")
-      for (l in 1:length(levels(data[,v]))){
-        myn = sum(data[,v]==levels(data[,v])[l], na.rm = T)
-        myp = formatC(myn/length(data[,v])*100, format = "f", digits = 1)
-        out = paste0(myn, " (", myp, "%)")
-        for (k in levels(group.factor)){
-          myn = sum(data[,v][group.factor==k]==levels(data[,v])[l], na.rm = T)
-          myp = formatC(myn/sum(group.factor==k)*100, format = "f", digits = 1)
-          out=c(out, paste0(myn, " (", myp, "%)"))
-        }
-        mytable=rbind(mytable, out)
-        rownames(mytable)[nrow(mytable)]=paste0(levels(data[,v])[l]) 
-      }
-    }
-    myn = sum(is.na(data[,v]))
-    if(myn > 0){
-      myp = formatC(myn/length(data[,v])*100, format = "f", digits = 1)
-      out = paste0(myn, " (", myp, "%)")
-      for (k in levels(group.factor)){
-        myn = sum(is.na(data[,v][group.factor==k]))
-        myp = formatC(myn/sum(group.factor==k)*100, format = "f", digits = 1)
-        out=c(out, paste0(myn, " (", myp, "%)"))
-      }
-      mytable=rbind(mytable, out)
-      rownames(mytable)[nrow(mytable)]="Missing, N (%)"
-    }
-  }
-  out = nrow(data)
-  for (k in levels(group.factor)){
-    out=c(out, sum(group.factor==k))
-  }
-  colnames(mytable)=paste0(c("Total",levels(group.factor))," (N=",out,")")
-  SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/Descriptive_statistics/","Characteristics_by_",group.factor.name,".xlsx"))
-}
-
 ## Overview of population characteristics: by data_type ----
 group.factor.name = "data_type"
 data = covar %>% select(Age, Gender, Education, Smoking,
                         Energy, Proteins, Fats, Carbohydrates, Fibers,
-                        Physical_activity, Alcohol, Country)
+                        Physical_activity, Alcohol, Centre)
 labels = c("Age", "Gender", "Education", "Smoking status", "Energy", "Proteins", "Fats",
            "Carbohydrates", "Fibers", "Physical activity",
-           "Alcohol consumption", "Country")
+           "Alcohol consumption", "Centre")
 units = c("years", NA, NA, NA, "kcal/day", "g/day", "g/day",
           "g/day", "g/day", NA, NA, NA)
 {
@@ -205,11 +76,210 @@ units = c("years", NA, NA, NA, "kcal/day", "g/day", "g/day",
   SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/Descriptive_statistics/","Characteristics_by_",group.factor.name,".xlsx"))
 }
 
-# Overview of outcomes----
+
+# Overview of population characteristics (N = 734) ----
+covar = readRDS(paste0("../Data/","PesticidesPCBBDEs_train_covar",".rds"))
+## Overview of population characteristics: by Centre ----
+group.factor.name = "Centre"
+data = covar %>% select(Age, Gender, Education, Smoking,
+                        Energy, Proteins, Fats, Carbohydrates, Fibers,
+                        Physical_activity, Alcohol)
+labels = c("Age","Gender", "Education","Smoking status", "Energy", "Proteins", "Fats",
+           "Carbohydrates", "Fibers", "Physical activity",
+           "Alcohol consumption")
+units = c("years",NA, NA, NA, "kcal/day", "g/day", "g/day",
+          "g/day", "g/day", NA, NA)
+{
+  group.factor = covar[,group.factor.name]
+  mytable=NULL
+  for (v in 1:ncol(data)){
+    label = labels[v]
+    unit = units[v]
+    if (is.numeric(data[,v])){
+      mymean=formatC(mean(data[,v], na.rm=TRUE), format="f", digits=1)
+      mysd=formatC(sd(data[,v], na.rm=TRUE), format="f", digits=1)
+      out = paste0(mymean, " (", mysd, ")")
+      for (k in levels(group.factor)){
+        mymean=formatC(mean(data[,v][group.factor==k], na.rm=TRUE), format="f", digits=1)
+        mysd=formatC(sd(data[,v][group.factor==k], na.rm=TRUE), format="f", digits=1)
+        out=c(out, paste0(mymean, " (", mysd, ")"))
+      }
+      mytable=rbind(mytable, out)
+      rownames(mytable)[nrow(mytable)]= paste0(label," (",unit,"), ","Mean (SD)")
+      myn = sum(is.na(data[,v]))
+    } else if(is.factor(data[,v])){
+      mytable=rbind(mytable, rep(NA, length(levels(group.factor))+1))
+      rownames(mytable)[nrow(mytable)]=paste0(label, ", N (%)")
+      for (l in 1:length(levels(data[,v]))){
+        myn = sum(data[,v]==levels(data[,v])[l], na.rm = T)
+        myp = formatC(myn/length(data[,v])*100, format = "f", digits = 1)
+        out = paste0(myn, " (", myp, "%)")
+        for (k in levels(group.factor)){
+          myn = sum(data[,v][group.factor==k]==levels(data[,v])[l], na.rm = T)
+          myp = formatC(myn/sum(group.factor==k)*100, format = "f", digits = 1)
+          out=c(out, paste0(myn, " (", myp, "%)"))
+        }
+        mytable=rbind(mytable, out)
+        rownames(mytable)[nrow(mytable)]=paste0(levels(data[,v])[l]) 
+      }
+    }
+    myn = sum(is.na(data[,v]))
+    if(myn > 0){
+      myp = formatC(myn/length(data[,v])*100, format = "f", digits = 1)
+      out = paste0(myn, " (", myp, "%)")
+      for (k in levels(group.factor)){
+        myn = sum(is.na(data[,v][group.factor==k]))
+        myp = formatC(myn/sum(group.factor==k)*100, format = "f", digits = 1)
+        out=c(out, paste0(myn, " (", myp, "%)"))
+      }
+      mytable=rbind(mytable, out)
+      rownames(mytable)[nrow(mytable)]="Missing, N (%)"
+    }
+  }
+  out = nrow(data)
+  for (k in levels(group.factor)){
+    out=c(out, sum(group.factor==k))
+  }
+  colnames(mytable)=paste0(c("Total",levels(group.factor))," (N=",out,")")
+  SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/Descriptive_statistics/","Characteristics_by_",group.factor.name,".xlsx"))
+}
+## Overview of population characteristics: by Gender ----
+group.factor.name = "Gender"
+data = covar %>% select(Age, Education, Smoking,
+                        Energy, Proteins, Fats, Carbohydrates, Fibers,
+                        Physical_activity, Alcohol, Centre)
+labels = c("Age", "Education", "Smoking status", "Energy", "Proteins", "Fats",
+           "Carbohydrates", "Fibers","Physical activity",
+           "Alcohol consumption", "Centre")
+units = c("years", NA, NA, "kcal/day", "g/day", "g/day",
+          "g/day", "g/day", NA, NA, NA)
+{
+  group.factor = covar[,group.factor.name]
+  mytable=NULL
+  for (v in 1:ncol(data)){
+    label = labels[v]
+    unit = units[v]
+    if (is.numeric(data[,v])){
+      mymean=formatC(mean(data[,v], na.rm=TRUE), format="f", digits=1)
+      mysd=formatC(sd(data[,v], na.rm=TRUE), format="f", digits=1)
+      out = paste0(mymean, " (", mysd, ")")
+      for (k in levels(group.factor)){
+        mymean=formatC(mean(data[,v][group.factor==k], na.rm=TRUE), format="f", digits=1)
+        mysd=formatC(sd(data[,v][group.factor==k], na.rm=TRUE), format="f", digits=1)
+        out=c(out, paste0(mymean, " (", mysd, ")"))
+      }
+      mytable=rbind(mytable, out)
+      rownames(mytable)[nrow(mytable)]= paste0(label," (",unit,"), ","Mean (SD)")
+      myn = sum(is.na(data[,v]))
+    } else if(is.factor(data[,v])){
+      mytable=rbind(mytable, rep(NA, length(levels(group.factor))+1))
+      rownames(mytable)[nrow(mytable)]=paste0(label, ", N (%)")
+      for (l in 1:length(levels(data[,v]))){
+        myn = sum(data[,v]==levels(data[,v])[l], na.rm = T)
+        myp = formatC(myn/length(data[,v])*100, format = "f", digits = 1)
+        out = paste0(myn, " (", myp, "%)")
+        for (k in levels(group.factor)){
+          myn = sum(data[,v][group.factor==k]==levels(data[,v])[l], na.rm = T)
+          myp = formatC(myn/sum(group.factor==k)*100, format = "f", digits = 1)
+          out=c(out, paste0(myn, " (", myp, "%)"))
+        }
+        mytable=rbind(mytable, out)
+        rownames(mytable)[nrow(mytable)]=paste0(levels(data[,v])[l]) 
+      }
+    }
+    myn = sum(is.na(data[,v]))
+    if(myn > 0){
+      myp = formatC(myn/length(data[,v])*100, format = "f", digits = 1)
+      out = paste0(myn, " (", myp, "%)")
+      for (k in levels(group.factor)){
+        myn = sum(is.na(data[,v][group.factor==k]))
+        myp = formatC(myn/sum(group.factor==k)*100, format = "f", digits = 1)
+        out=c(out, paste0(myn, " (", myp, "%)"))
+      }
+      mytable=rbind(mytable, out)
+      rownames(mytable)[nrow(mytable)]="Missing, N (%)"
+    }
+  }
+  out = nrow(data)
+  for (k in levels(group.factor)){
+    out=c(out, sum(group.factor==k))
+  }
+  colnames(mytable)=paste0(c("Total",levels(group.factor))," (N=",out,")")
+  SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/Descriptive_statistics/","Characteristics_by_",group.factor.name,".xlsx"))
+}
+
+# Overview of outcomes (All participants)----
 covar = readRDS(paste0("../Data/","All_participants_covar",".rds"))
 response = readRDS(paste0("../Data/","All_participants_response",".rds"))
-## Overview of outcomes: by Country----
-group.factor.name = "Country"
+## Overview of outcomes: by data_type----
+group.factor.name = "data_type"
+data = response %>% select(BMI_cat, WC_cat, TG_cat, TC, HDLC, LDLC, SBP, DBP, FPG)
+labels = c("Body Mass Index","Waist circumference","Triglyceride", "Total cholesterol",
+           "HDL-C", "LDL-C", "Systolic blood pressue", "Diastolic blood pressure",
+           "Fasting plasma glucose")
+units = c(NA, NA, NA, "mg/dL", "mg/dL", "mg/dL", "mmHg", "mmHg","mg/dL")
+{
+  group.factor = covar[,group.factor.name]
+  mytable=NULL
+  for (v in 1:ncol(data)){
+    label = labels[v]
+    unit = units[v]
+    if (is.numeric(data[,v])){
+      mymean=formatC(mean(data[,v], na.rm=TRUE), format="f", digits=1)
+      mysd=formatC(sd(data[,v], na.rm=TRUE), format="f", digits=1)
+      out = paste0(mymean, " (", mysd, ")")
+      for (k in levels(group.factor)){
+        mymean=formatC(mean(data[,v][group.factor==k], na.rm=TRUE), format="f", digits=1)
+        mysd=formatC(sd(data[,v][group.factor==k], na.rm=TRUE), format="f", digits=1)
+        out=c(out, paste0(mymean, " (", mysd, ")"))
+      }
+      mytable=rbind(mytable, out)
+      rownames(mytable)[nrow(mytable)]= paste0(label," (",unit,"), ","Mean (SD)")
+      myn = sum(is.na(data[,v]))
+    } else if(is.factor(data[,v])){
+      mytable=rbind(mytable, rep(NA, length(levels(group.factor))+1))
+      rownames(mytable)[nrow(mytable)]=paste0(label, ", N (%)")
+      for (l in 1:length(levels(data[,v]))){
+        myn = sum(data[,v]==levels(data[,v])[l], na.rm = T)
+        myp = formatC(myn/length(data[,v])*100, format = "f", digits = 1)
+        out = paste0(myn, " (", myp, "%)")
+        for (k in levels(group.factor)){
+          myn = sum(data[,v][group.factor==k]==levels(data[,v])[l], na.rm = T)
+          myp = formatC(myn/sum(group.factor==k)*100, format = "f", digits = 1)
+          out=c(out, paste0(myn, " (", myp, "%)"))
+        }
+        mytable=rbind(mytable, out)
+        rownames(mytable)[nrow(mytable)]=paste0(levels(data[,v])[l]) 
+      }
+    }
+    myn = sum(is.na(data[,v]))
+    if(myn > 0){
+      myp = formatC(myn/length(data[,v])*100, format = "f", digits = 1)
+      out = paste0(myn, " (", myp, "%)")
+      for (k in levels(group.factor)){
+        myn = sum(is.na(data[,v][group.factor==k]))
+        myp = formatC(myn/sum(group.factor==k)*100, format = "f", digits = 1)
+        out=c(out, paste0(myn, " (", myp, "%)"))
+      }
+      mytable=rbind(mytable, out)
+      rownames(mytable)[nrow(mytable)]="Missing, N (%)"
+    }
+  }
+  out = nrow(data)
+  for (k in levels(group.factor)){
+    out=c(out, sum(group.factor==k))
+  }
+  colnames(mytable)=paste0(c("Total",levels(group.factor))," (N=",out,")")
+  SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/Descriptive_statistics/","Outcome_by_",group.factor.name,".xlsx"))
+}
+
+
+# Overview of outcomes (N = 734) ----
+covar = readRDS(paste0("../Data/","PesticidesPCBBDEs_train_covar",".rds"))
+response = readRDS(paste0("../Data/","PesticidesPCBBDEs_train_response",".rds"))
+
+## Overview of outcomes: by Centre----
+group.factor.name = "Centre"
 data = response %>% select(BMI_cat, WC_cat, TG_cat, TC, HDLC, LDLC, SBP, DBP, FPG)
 labels = c("Body Mass Index","Waist circumference","Triglyceride", "Total cholesterol",
            "HDL-C", "LDL-C", "Systolic blood pressue", "Diastolic blood pressure",
@@ -272,68 +342,6 @@ units = c(NA, NA, NA, "mg/dL", "mg/dL", "mg/dL", "mmHg", "mmHg","mg/dL")
 
 ## Overview of outcomes: by Gender----
 group.factor.name = "Gender"
-data = response %>% select(BMI_cat, WC_cat, TG_cat, TC, HDLC, LDLC, SBP, DBP, FPG)
-labels = c("Body Mass Index","Waist circumference","Triglyceride", "Total cholesterol",
-           "HDL-C", "LDL-C", "Systolic blood pressue", "Diastolic blood pressure",
-           "Fasting plasma glucose")
-units = c(NA, NA, NA, "mg/dL", "mg/dL", "mg/dL", "mmHg", "mmHg","mg/dL")
-{
-  group.factor = covar[,group.factor.name]
-  mytable=NULL
-  for (v in 1:ncol(data)){
-    label = labels[v]
-    unit = units[v]
-    if (is.numeric(data[,v])){
-      mymean=formatC(mean(data[,v], na.rm=TRUE), format="f", digits=1)
-      mysd=formatC(sd(data[,v], na.rm=TRUE), format="f", digits=1)
-      out = paste0(mymean, " (", mysd, ")")
-      for (k in levels(group.factor)){
-        mymean=formatC(mean(data[,v][group.factor==k], na.rm=TRUE), format="f", digits=1)
-        mysd=formatC(sd(data[,v][group.factor==k], na.rm=TRUE), format="f", digits=1)
-        out=c(out, paste0(mymean, " (", mysd, ")"))
-      }
-      mytable=rbind(mytable, out)
-      rownames(mytable)[nrow(mytable)]= paste0(label," (",unit,"), ","Mean (SD)")
-      myn = sum(is.na(data[,v]))
-    } else if(is.factor(data[,v])){
-      mytable=rbind(mytable, rep(NA, length(levels(group.factor))+1))
-      rownames(mytable)[nrow(mytable)]=paste0(label, ", N (%)")
-      for (l in 1:length(levels(data[,v]))){
-        myn = sum(data[,v]==levels(data[,v])[l], na.rm = T)
-        myp = formatC(myn/length(data[,v])*100, format = "f", digits = 1)
-        out = paste0(myn, " (", myp, "%)")
-        for (k in levels(group.factor)){
-          myn = sum(data[,v][group.factor==k]==levels(data[,v])[l], na.rm = T)
-          myp = formatC(myn/sum(group.factor==k)*100, format = "f", digits = 1)
-          out=c(out, paste0(myn, " (", myp, "%)"))
-        }
-        mytable=rbind(mytable, out)
-        rownames(mytable)[nrow(mytable)]=paste0(levels(data[,v])[l]) 
-      }
-    }
-    myn = sum(is.na(data[,v]))
-    if(myn > 0){
-      myp = formatC(myn/length(data[,v])*100, format = "f", digits = 1)
-      out = paste0(myn, " (", myp, "%)")
-      for (k in levels(group.factor)){
-        myn = sum(is.na(data[,v][group.factor==k]))
-        myp = formatC(myn/sum(group.factor==k)*100, format = "f", digits = 1)
-        out=c(out, paste0(myn, " (", myp, "%)"))
-      }
-      mytable=rbind(mytable, out)
-      rownames(mytable)[nrow(mytable)]="Missing, N (%)"
-    }
-  }
-  out = nrow(data)
-  for (k in levels(group.factor)){
-    out=c(out, sum(group.factor==k))
-  }
-  colnames(mytable)=paste0(c("Total",levels(group.factor))," (N=",out,")")
-  SaveExcelWithSuperscripts(cbind(rownames(mytable),mytable), paste0("../Exports/Descriptive_statistics/","Outcome_by_",group.factor.name,".xlsx"))
-}
-
-## Overview of outcomes: by data_type----
-group.factor.name = "data_type"
 data = response %>% select(BMI_cat, WC_cat, TG_cat, TC, HDLC, LDLC, SBP, DBP, FPG)
 labels = c("Body Mass Index","Waist circumference","Triglyceride", "Total cholesterol",
            "HDL-C", "LDL-C", "Systolic blood pressue", "Diastolic blood pressure",

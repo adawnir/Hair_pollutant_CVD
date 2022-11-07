@@ -62,7 +62,7 @@ for(i in 1:3){
   covar = covar %>% mutate(DietScore1 = as.numeric(scores[,1]),
                            DietScore2 = as.numeric(scores[,2]),
                            DietScore3 = as.numeric(scores[,3])) %>%
-    select(Country, Age, Gender, Smoking, starts_with("DietScore"),
+    select(Centre, Age, Gender, Smoking, starts_with("DietScore"),
            Education, Physical_activity, Alcohol)
   covar$Education = relevel(covar$Education, "High")
   covar$Physical_activity = relevel(covar$Physical_activity, "Active")

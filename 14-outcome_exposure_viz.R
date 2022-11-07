@@ -14,7 +14,7 @@ i = 1
 
 # Load data
 Y = readRDS(paste0("../Data/",filepaths[i],"_response.rds"))
-model = c("Model 0: + Age + Gender", "Model 0 + Country", "Model 0 + Education",
+model = c("Model 0: + Age + Gender", "Model 0 + Centre", "Model 0 + Education",
           "+ Smoking status", "+ Dietary intake",
           "+ Physical activity", "+ Alcohol consumption")
 

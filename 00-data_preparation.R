@@ -38,16 +38,17 @@ for (m in 1:2){
   
   # Rename columns
   newdata = newdata %>% rename(ID = "identifiant",
-                                 Diabetes_medication = "Diabetic_MD",
-                                 Hypertension_medication = "Antihypertensive_MD",
-                                 Lipid_medication = "Lipid_MD")
+                               Centre = "Country",
+                               Diabetes_medication = "Diabetic_MD",
+                               Hypertension_medication = "Antihypertensive_MD",
+                               Lipid_medication = "Lipid_MD")
   
   newdata = newdata %>% mutate_at(vars(ends_with("_medication")),
                                   function(x) factor(x, 0:1, labels = c("No","Yes")))
   
   # Covariate transformation
-  table(newdata$Country)
-  newdata$Country = factor(newdata$Country)
+  table(newdata$Centre)
+  newdata$Centre = factor(newdata$Centre)
   
   table(newdata$Gender)
   newdata$Gender = factor(ifelse(newdata$Gender=="F", "Female", "Male"))
@@ -91,7 +92,7 @@ for (m in 1:2){
   expo = colnames(data)[38:ncol(data)]
   expo = newdata %>% select(all_of(expo))
   
-  covar = newdata %>% select(Country, Age, Education, Gender, Smoking,
+  covar = newdata %>% select(Centre, Age, Education, Gender, Smoking,
                              Energy, Proteins, Fats, Carbohydrates, Fibers,
                              Physical_activity, Alcohol)
   response = newdata %>% select(BMI, WC, TG, TC, LDLC, HDLC, SBP, DBP, FPG,
@@ -234,7 +235,7 @@ covar$data_type = factor(rep(1:3,
                              c(length(train_pest),length(train_pahs),length(test))),
                          labels = c("train_pest","train_pahs","test"))
 table(covar$data_type)
-table(covar$Country,covar$data_type)
+table(covar$Centre,covar$data_type)
 
 saveRDS(covar, "../Data/All_participants_covar.rds")
 write.csv(covar, "../Exports/Data/All_participants_covar.csv")
