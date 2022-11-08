@@ -9,6 +9,7 @@ library(colorspace)
 library(sharp)
 source("graph_colours.R")
 filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
+ifelse(dir.exists("../Figures/Multivariate/"),"",dir.create("../Figures/Multivariate/"))
 
 i = 1
 
@@ -23,8 +24,8 @@ for (k in 1:9){
   par(mar=c(1,1,0,1), oma = c(6,13,3,5), mfrow = c(7,1))
   # Load data
   for (f in 0:6){
-    stab = readRDS(paste0("../Results/Multivariate/",colnames(Y)[k],"_X_f",f,"_output_",filepaths[i],".pdf"))
-    selprop = readRDS(paste0("../Results/Multivariate/",colnames(Y)[k],"_X_f",f,"_selprop_",filepaths[i],".pdf"))
+    stab = readRDS(paste0("../Results/Multivariate/",colnames(Y)[k],"_X_f",f,"_output_",filepaths[i],".rds"))
+    selprop = readRDS(paste0("../Results/Multivariate/",colnames(Y)[k],"_X_f",f,"_selprop_",filepaths[i],".rds"))
     # assign(paste0("selprop",f),selprop)
     annot_sub = annot[names(selprop)]
     pi = Argmax(stab)[2]
@@ -50,12 +51,12 @@ for (k in 1:9){
   dev.off() 
 }
 for (j in 1:3){
-  pdf(paste0("../Figures/Multivariate/MLASSO",j,"_X_summary_selprop_",filepaths[i],".pdf"), height = 8)
+  pdf(paste0("../Figures/Multivariate/MLASSO",j,"_Y_X_summary_selprop_",filepaths[i],".pdf"), height = 8)
   par(mar=c(1,1,0,1), oma = c(6,13,3,5), mfrow = c(7,1))
   # Load data
   for (f in 0:6){
-    stab = readRDS(paste0("../Results/Multivariate/MLASSO",j,"_X_f",f,"_output_",filepaths[i],".pdf"))
-    selprop = readRDS(paste0("../Results/Multivariate/MLASSO",j,"_X_f",f,"_selprop_",filepaths[i],".pdf"))
+    stab = readRDS(paste0("../Results/Multivariate/MLASSO",j,"_Y_X_f",f,"_output_",filepaths[i],".rds"))
+    selprop = readRDS(paste0("../Results/Multivariate/MLASSO",j,"_Y_X_f",f,"_selprop_",filepaths[i],".rds"))
     # assign(paste0("selprop",f),selprop)
     annot_sub = annot[names(selprop)]
     pi = Argmax(stab)[2]
