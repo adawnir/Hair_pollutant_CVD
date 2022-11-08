@@ -1,5 +1,8 @@
+# R2GUESS
 
 # R2GUESS ----
+f = 4
+model = readRDS(paste0("../Results/R2GUESS/",paths[j],"/Model",f,".rds"))
 write.table(colnames(X), paste0(model$path.input,"/X.annotation.txt"))
 
 ## Variables included in the best models

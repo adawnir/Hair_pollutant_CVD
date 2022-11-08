@@ -121,11 +121,3 @@ dev.off()
 pdf(paste0("../Figures/R2GUESS/",paths[i],"/Model",f,"_conv2.pdf"))
 check.convergence(model, 2)
 dev.off()
-
-set.seed(3)
-n.sweep = get.sweep.best.model(model, models = 1)
-res.g = get.g.sweep(model, n.sweep$result, 1)
-beta = sample.beta(model, res.g, Nmonte = 2, Nmonte.sigma = 2)
-
-saveRDS(res.g, paste0("../Results/R2GUESS/",paths[i],"/",model_type,"_model_res.rds"))
-saveRDS(beta, paste0("../Results/R2GUESS/",paths[i],"/",model_type,"_model_beta.rds"))
