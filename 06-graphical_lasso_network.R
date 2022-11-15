@@ -16,14 +16,11 @@ library(sharp)
 source("functions.R")
 source("graph_colours.R")
 
-## Parameters
-args=commandArgs(trailingOnly=TRUE)
-m=as.numeric(args[1])
+filepaths = c("PesticidesPCBBDEs","PAHs")
+m = 1
 
-# Load data sets
 annot = readRDS("../Data/Compound_family_annotation.rds")
 
-filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 # Load data
 expo = readRDS(paste0("../Processed/",filepaths[m],"_expo_ndimp_naimp_log.rds"))
 covar = readRDS(paste0("../Processed/",filepaths[m],"_covar_naimp.rds"))

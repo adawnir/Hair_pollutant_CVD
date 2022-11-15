@@ -8,42 +8,39 @@ source("functions.R")
 # library(imputeLCMD)
 library(missForest)
 
-filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
+filepaths = c("PesticidesPCBBDEs","PAHs")
+m = 1
 
-for (m in 1:3){
-  print(filepaths[m])
-  expo = readRDS(paste0("../Processed/",filepaths[m],"_expo_ndimp.rds"))
-  covar = readRDS(paste0("../Data/",filepaths[m],"_covar.rds"))
-  response = readRDS(paste0("../Data/",filepaths[m],"_response.rds"))
-  
-  ## Imputing missing values
-  # Exposures
-  set.seed(202204)
-  print("Imputing exposures")
-  imp = missForest(expo)
-  print(imp$OOBerror)
-  expo_imp = imp$ximp
-  
-  # Covariate information
-  set.seed(202204)
-  print("Imputing covariates")
-  imp = missForest(covar)
-  print(imp$OOBerror)
-  covar_imp = imp$ximp[,1:ncol(covar)]
-  
-  all(colnames(expo_imp)==colnames(expo))
-  all(colnames(covar_imp)==colnames(covar))
-  all(rownames(covar_imp)==rownames(expo_imp))
-  
-  saveRDS(expo_imp, paste0("../Processed/",filepaths[m],"_expo_ndimp_naimp.rds"))
-  saveRDS(covar_imp, paste0("../Processed/",filepaths[m],"_covar_naimp.rds"))
-  
-  ## Log10 transformation
-  expo_log = log10(expo_imp)
-  
-  saveRDS(expo_log, paste0("../Processed/",filepaths[m],"_expo_ndimp_naimp_log.rds"))
-}
+expo = readRDS(paste0("../Processed/",filepaths[m],"_expo_ndimp.rds"))
+covar = readRDS(paste0("../Data/",filepaths[m],"_covar.rds"))
+response = readRDS(paste0("../Data/",filepaths[m],"_response.rds"))
 
+## Imputing missing values
+# Exposures
+set.seed(202204)
+print("Imputing exposures")
+imp = missForest(expo)
+print(imp$OOBerror)
+expo_imp = imp$ximp
+
+# Covariate information
+set.seed(202204)
+print("Imputing covariates")
+imp = missForest(covar)
+print(imp$OOBerror)
+covar_imp = imp$ximp[,1:ncol(covar)]
+
+all(colnames(expo_imp)==colnames(expo))
+all(colnames(covar_imp)==colnames(covar))
+all(rownames(covar_imp)==rownames(expo_imp))
+
+saveRDS(expo_imp, paste0("../Processed/",filepaths[m],"_expo_ndimp_naimp.rds"))
+saveRDS(covar_imp, paste0("../Processed/",filepaths[m],"_covar_naimp.rds"))
+
+## Log10 transformation
+expo_log = log10(expo_imp)
+
+saveRDS(expo_log, paste0("../Processed/",filepaths[m],"_expo_ndimp_naimp_log.rds"))
 
 
 

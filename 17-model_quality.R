@@ -15,17 +15,19 @@ filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
 paths = c("Option1","Option2","Option3")
 
 # R2GUESS ----
+i = 1
 j = 1
 f = 4
+X = readRDS(paste0("../Processed/",filepaths[i],"_expo_ndimp_naimp_log.rds"))
 model = readRDS(paste0("../Results/R2GUESS/",paths[j],"/Model",f,".rds"))
 write.table(colnames(X), paste0(model$path.input,"/X.annotation.txt"))
 
 ## Variables included in the best models
-pdf(paste0("../Figures/R2GUESS/Model",f,"_Variables_included_top20_models_",paths[j],".pdf"))
+pdf(paste0("../Figures/R2GUESS/Model",f-1,"_Variables_included_top20_models_",paths[j],".pdf"))
 plotvariable(model, 20, file.annotation = paste0(model$path.input,"/X.annotation.txt"))
 dev.off()
 ## Proximity between the best models
-pdf(paste0("../Figures/R2GUESS/Model",f,"_Proximity_between_top20_models_",paths[j],".pdf"))
+pdf(paste0("../Figures/R2GUESS/Model",f-1,"_Proximity_between_top20_models_",paths[j],".pdf"))
 plotmodel(model, 20)
 dev.off()
 
