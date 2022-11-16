@@ -13,7 +13,7 @@ m = 1
 
 expo = readRDS(paste0("../Processed/",filepaths[m],"_expo_ndimp.rds"))
 covar = readRDS(paste0("../Data/",filepaths[m],"_covar.rds"))
-response = readRDS(paste0("../Data/",filepaths[m],"_response.rds"))
+trait = readRDS(paste0("../Data/",filepaths[m],"_trait.rds"))
 
 ## Imputing missing values
 # Exposures

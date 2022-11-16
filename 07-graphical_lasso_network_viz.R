@@ -93,7 +93,7 @@ for (m in 1:length(filepaths)){
 }
 
 # Outcome ----
-filepaths = c("PesticidesPCBBDEs_train","PAHs_train","Overlap_test")
+filepaths = c("PesticidesPCBBDEs","PAHs")
 for (m in 1:length(filepaths)){
   for (p in seq(10,50,10)){
     out = readRDS(paste0("../Results/Graphical_network/",filepaths[m],"_outcome_network_output_PFER",p,".rds"))

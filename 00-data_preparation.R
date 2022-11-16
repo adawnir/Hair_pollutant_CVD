@@ -97,11 +97,11 @@ expo = newdata %>% select(all_of(expo))
 covar = newdata %>% select(Centre, Age, Education, Gender, Smoking,
                            Energy, Proteins, Fats, Carbohydrates, Fibers,
                            Physical_activity, Alcohol)
-response = newdata %>% select(BMI, WC, TG, TC, LDLC, HDLC, SBP, DBP, FPG,
+trait = newdata %>% select(BMI, WC, TG, TC, LDLC, HDLC, SBP, DBP, FPG,
                               BMI_cat, WC_cat, TG_cat, ends_with("_medication"),
                               Obesity, Dyslipidemia, Hypertension, Diabetes)
 all(rownames(expo) == rownames(covar))
-all(rownames(covar) == rownames(response))
+all(rownames(covar) == rownames(trait))
 
 ifelse(dir.exists("../Exports/"), "", dir.create("../Exports/"))
 ifelse(dir.exists("../Exports/Data/"), "", dir.create("../Exports/Data/"))
@@ -109,8 +109,8 @@ saveRDS(expo, paste0("../Data/",filepaths[m],"_expo.rds"))
 write.csv(expo, paste0("../Exports/Data/",filepaths[m],"_expo.csv"))
 saveRDS(covar, paste0("../Data/",filepaths[m],"_covar.rds"))
 write.csv(covar, paste0("../Exports/Data/",filepaths[m],"_covar.csv"))
-saveRDS(response, paste0("../Data/",filepaths[m],"_response.rds"))
-write.csv(response, paste0("../Exports/Data/",filepaths[m],"_response.csv"))
+saveRDS(trait, paste0("../Data/",filepaths[m],"_trait.rds"))
+write.csv(trait, paste0("../Exports/Data/",filepaths[m],"_trait.csv"))
 
 ### Proportion of NAs per chemical compounds ----
 naprop = apply(expo, 2, function(x) sum(is.na(x))/nrow(expo))
