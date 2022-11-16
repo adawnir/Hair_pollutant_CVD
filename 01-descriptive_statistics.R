@@ -10,9 +10,8 @@ library(tidyverse)
 ifelse(dir.exists("../Exports/Descriptive_statistics/"), "", dir.create("../Exports/Descriptive_statistics/"))
 
 # Overview of population characteristics ----
-filepaths = c("PesticidesPCBBDEs","PAHs")
-m = 1
-covar = readRDS(paste0("../Data/",filepaths[m],"_covar.rds"))
+filepath = "PesticidesPCBBDEs"
+covar = readRDS(paste0("../Data/",filepath,"_covar.rds"))
 
 ## Overview of population characteristics: by Centre ----
 group.factor.name = "Centre"
@@ -144,12 +143,12 @@ units = c("years", NA, NA, "kcal/day", "g/day", "g/day",
 }
 
 # Overview of outcomes ----
-covar = readRDS(paste0("../Data/",filepaths[m],"_covar.rds"))
-response = readRDS(paste0("../Data/",filepaths[m],"_response.rds"))
+covar = readRDS(paste0("../Data/",filepath,"_covar.rds"))
+trait = readRDS(paste0("../Data/",filepath,"_trait.rds"))
 
 ## Overview of outcomes: by Centre----
 group.factor.name = "Centre"
-data = response %>% select(BMI_cat, WC_cat, TG_cat, TC, HDLC, LDLC, SBP, DBP, FPG)
+data = trait %>% select(BMI_cat, WC_cat, TG_cat, TC, HDLC, LDLC, SBP, DBP, FPG)
 labels = c("Body Mass Index","Waist circumference","Triglyceride", "Total cholesterol",
            "HDL-C", "LDL-C", "Systolic blood pressue", "Diastolic blood pressure",
            "Fasting plasma glucose")
@@ -211,7 +210,7 @@ units = c(NA, NA, NA, "mg/dL", "mg/dL", "mg/dL", "mmHg", "mmHg","mg/dL")
 
 ## Overview of outcomes: by Gender----
 group.factor.name = "Gender"
-data = response %>% select(BMI_cat, WC_cat, TG_cat, TC, HDLC, LDLC, SBP, DBP, FPG)
+data = trait %>% select(BMI_cat, WC_cat, TG_cat, TC, HDLC, LDLC, SBP, DBP, FPG)
 labels = c("Body Mass Index","Waist circumference","Triglyceride", "Total cholesterol",
            "HDL-C", "LDL-C", "Systolic blood pressue", "Diastolic blood pressure",
            "Fasting plasma glucose")
@@ -282,16 +281,13 @@ library(tidyverse)
 library(colorspace)
 source("graph_colours.R")
 
-filepaths = c("PesticidesPCBBDEs","PAHs")
-m = 1
-
 {
-  response = readRDS(paste0("../Data/",filepaths[m],"_response.rds"))
+  trait = readRDS(paste0("../Data/",filepath,"_trait.rds"))
   
-  OB = rownames(response)[which(response$Obesity == "1")]
-  DL = rownames(response)[which(response$Dyslipidemia == "1")]
-  HT = rownames(response)[which(response$Hypertension == "1")]
-  DB = rownames(response)[which(response$Diabetes == "1")]
+  OB = rownames(trait)[which(trait$Obesity == "1")]
+  DL = rownames(trait)[which(trait$Dyslipidemia == "1")]
+  HT = rownames(trait)[which(trait$Hypertension == "1")]
+  DB = rownames(trait)[which(trait$Diabetes == "1")]
   
   mylist = list(OB, DL, HT, DB)
   mynames = paste0(c("Obesity", "Dyslipidemia", "Hypertension", "Diabetes"), 

@@ -8,12 +8,11 @@ source("functions.R")
 # library(imputeLCMD)
 library(missForest)
 
-filepaths = c("PesticidesPCBBDEs","PAHs")
-m = 1
+filepath = "PesticidesPCBBDEs"
 
-expo = readRDS(paste0("../Processed/",filepaths[m],"_expo_ndimp.rds"))
-covar = readRDS(paste0("../Data/",filepaths[m],"_covar.rds"))
-trait = readRDS(paste0("../Data/",filepaths[m],"_trait.rds"))
+expo = readRDS(paste0("../Processed/",filepath,"_expo_ndimp.rds"))
+covar = readRDS(paste0("../Data/",filepath,"_covar.rds"))
+trait = readRDS(paste0("../Data/",filepath,"_trait.rds"))
 
 ## Imputing missing values
 # Exposures
@@ -34,13 +33,13 @@ all(colnames(expo_imp)==colnames(expo))
 all(colnames(covar_imp)==colnames(covar))
 all(rownames(covar_imp)==rownames(expo_imp))
 
-saveRDS(expo_imp, paste0("../Processed/",filepaths[m],"_expo_ndimp_naimp.rds"))
-saveRDS(covar_imp, paste0("../Processed/",filepaths[m],"_covar_naimp.rds"))
+saveRDS(expo_imp, paste0("../Processed/",filepath,"_expo_ndimp_naimp.rds"))
+saveRDS(covar_imp, paste0("../Processed/",filepath,"_covar_naimp.rds"))
 
 ## Log10 transformation
 expo_log = log10(expo_imp)
 
-saveRDS(expo_log, paste0("../Processed/",filepaths[m],"_expo_ndimp_naimp_log.rds"))
+saveRDS(expo_log, paste0("../Processed/",filepath,"_expo_ndimp_naimp_log.rds"))
 
 
 

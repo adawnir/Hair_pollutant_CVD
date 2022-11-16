@@ -13,10 +13,10 @@ source("functions.R")
 source("graph_colours.R")
 
 ## Load data ----
-filepaths = c("PesticidesPCBBDEs","PAHs")
+filepath = "PesticidesPCBBDEs"
 m = 1
 
-data = readRDS(paste0("../Processed/",filepaths[m],"_covar_naimp.rds"))
+data = readRDS(paste0("../Processed/",filepath,"_covar_naimp.rds"))
 
 ## Diet information ----
 ifelse(dir.exists("../Results/"),"",dir.create("../Results/"))
@@ -24,7 +24,7 @@ ifelse(dir.exists("../Results/DietScore/"),"",dir.create("../Results/DietScore/"
 
 x = data %>% select(Energy, Proteins, Fats, Carbohydrates, Fibers)
 mypca = PCA(x, graph = FALSE)
-saveRDS(mypca, paste0("../Results/DietScore/Diet_info_pca_",filepaths[m],".rds"))
+saveRDS(mypca, paste0("../Results/DietScore/Diet_info_pca_",filepath,".rds"))
   
 scores = mypca$ind$coord
 colnames(scores) = paste0("DietScore",1:ncol(scores))
@@ -36,7 +36,7 @@ print(mypca$var$coord[,1:3])
 print(mypca$var$contrib[,1:3])
   
 # Scree plot
-pdf(paste0("../Figures/Descriptive_statistics/Diet_info_pca_scree_plot.pdf"), width=5, height=5)
+pdf(paste0("../Figures/Supplementary/Diet_info_pca_scree_plot.pdf"), width=5, height=5)
 par(mar=c(5,5,1,1))
 plot(ev, pch=19, col="#0019a8", las=1, type="b", ylim=c(0,1),
      ylab="Proportion of explained variance", xlab="PCs")
@@ -54,5 +54,5 @@ covar$Education = relevel(covar$Education, "High")
 covar$Physical_activity = relevel(covar$Physical_activity, "Active")
 covar$Alcohol = factor(covar$Alcohol, levels = c("Low","High","Moderate"))
 
-saveRDS(covar, paste0("../Processed/",filepaths[m],"_Z.rds"))
-write.csv(covar, paste0("../Exports/Data/",filepaths[m],"_Z.csv"))
+saveRDS(covar, paste0("../Processed/",filepath,"_Z.rds"))
+write.csv(covar, paste0("../Exports/Data/",filepath,"_Z.csv"))
