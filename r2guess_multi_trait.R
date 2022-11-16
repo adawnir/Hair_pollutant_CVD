@@ -35,15 +35,15 @@ X = readRDS(paste0("../Processed/",filepath,"_expo_ndimp_naimp_log.rds"))
 X = as.data.frame(X)
 
 # Select outcomes
-colnames(response)
+colnames(trait)
 if (i==1){
-  Y = response %>% select(BMI, WC, TG, HDLC, SBP, DBP)
+  Y = trait %>% select(BMI, WC, TG, HDLC, SBP, DBP)
 }
 if (i==2){
-  Y = response %>% select(BMI, WC, TG, HDLC, SBP, DBP, FPG)
+  Y = trait %>% select(BMI, WC, TG, HDLC, SBP, DBP, FPG)
 }
 if (i==3){
-  Y = response %>% select(BMI, WC, TG, TC, LDLC, HDLC, SBP, DBP, FPG)
+  Y = trait %>% select(BMI, WC, TG, TC, LDLC, HDLC, SBP, DBP, FPG)
 }
 
 if (f == 0){
